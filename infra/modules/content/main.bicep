@@ -18,6 +18,9 @@ param deployWorkbooks bool = true
 @description('Whether deployed analytic rules should be enabled.')
 param analyticsEnabled bool = false
 
+@description('Sentinel onboarding-state value resolved before content deployment. This read fails when Sentinel is absent or unreadable.')
+param sentinelCustomerManagedKey bool
+
 @description('Resource tags applied where supported.')
 param tags object = {}
 
@@ -54,6 +57,7 @@ module workbooks '../workbooks/main.bicep' = {
 }
 
 output contentManifestVersion string = contentManifest.solutionVersion
+output sentinelCustomerManagedKey bool = sentinelCustomerManagedKey
 output functionResourceIds array = functions.outputs.functionResourceIds
 output analyticRuleResourceIds array = analytics.outputs.analyticRuleResourceIds
 output workbookResourceIds array = workbooks.outputs.workbookResourceIds

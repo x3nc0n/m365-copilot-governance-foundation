@@ -16,3 +16,4 @@ resource onboardingState 'Microsoft.SecurityInsights/onboardingStates@2024-03-01
 }
 
 output sentinelOnboardingStateResourceId string = onboardingState.id
+output sentinelCustomerManagedKey bool = onboardingState.properties.customerManagedKey

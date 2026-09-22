@@ -56,6 +56,16 @@ Describe 'ARM and Bicep drift' {
         }
     }
 
+    It 'requires a readable Sentinel onboarding state before existing-workspace content deployment' {
+        $source = Get-Content -LiteralPath (Join-Path $script:RepositoryRoot 'infra/existing-workspace/main.bicep') -Raw
+        $source | Should -Match 'sentinelCustomerManagedKey:\s*sentinelOnboardingState\.properties\.customerManagedKey'
+
+        $template = Get-Content -LiteralPath (Join-Path $script:RepositoryRoot 'infra/compiled/existing-workspace.json') -Raw
+        $template | Should -Match '"sentinelCustomerManagedKey"'
+        $template | Should -Match 'Microsoft\.SecurityInsights/onboardingStates'
+        $template | Should -Match '\.customerManagedKey'
+    }
+
     It 'embeds four functions, three analytics, and four workbooks with deployable properties' {
         $compiledTemplates = @(
             'infra/compiled/greenfield.json'
