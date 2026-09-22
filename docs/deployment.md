@@ -222,18 +222,20 @@ Validation commands are read-only by default. A tenant mutation requires `-Boots
 
 Use `Get-Help <script> -Full` for the exact frozen parameters. Administrator consent and privacy/legal approval are never automated.
 
-## Deploy to Azure release assets
+## Deploy to Azure portal assets
 
-Version 0.1.0 uses these immutable asset templates:
+Version 0.1.0 uses these immutable raw tagged templates:
 
 ```text
-https://github.com/x3nc0n/m365-copilot-governance-foundation/releases/download/v0.1.0/greenfield.json
-https://github.com/x3nc0n/m365-copilot-governance-foundation/releases/download/v0.1.0/existing-workspace.json
+https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.0/generated/release-assets/greenfield.json
+https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.0/generated/release-assets/existing-workspace.json
 ```
 
 Portal definition assets use the corresponding `greenfield.createUiDefinition.json` and `existing-workspace.createUiDefinition.json` names. The `v0.1.0` GitHub Release is published with all required assets.
 
-A git tag and a GitHub Release are separate objects. The tag identifies the source revision; `/releases/download/<tag>/<asset>` requires a GitHub Release associated with that tag and an uploaded asset with that exact name. Before opening a Deploy to Azure link, complete the anonymous download, JSON parsing, and checksum procedure in [Verify the published release](release.md#verify-the-published-release).
+Azure Portal must retrieve both files cross-origin. Follow the [Microsoft Deploy to Azure button guidance](https://learn.microsoft.com/azure/azure-resource-manager/templates/deploy-to-azure-button): use each raw GitHub URL, URL-encode it, and append it to the portal route. The raw tagged URLs provide the required CORS response and remain immutable because they are pinned to `v0.1.0`.
+
+GitHub Release assets serve a different purpose: human downloads, `release-manifest.json`, `checksums.sha256`, and release provenance. A successful release-asset download does not prove that Azure Portal can fetch that response cross-origin. Before opening a Deploy to Azure link, complete both the [portal header verification](release.md#verify-the-portal-assets) and the [release checksum verification](release.md#verify-the-published-release).
 
 Asset verification proves publication integrity; it does not authorize or validate an Azure deployment. Preserve the native-first boundary: review the authoritative Microsoft control-plane ownership, then run Azure `validate` and `what-if` manually with separately authorized access before any `create` operation.
 
