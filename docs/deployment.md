@@ -231,7 +231,11 @@ https://github.com/x3nc0n/m365-copilot-governance-foundation/releases/download/v
 https://github.com/x3nc0n/m365-copilot-governance-foundation/releases/download/v0.1.0/existing-workspace.json
 ```
 
-Portal definition assets use the corresponding `greenfield.createUiDefinition.json` and `existing-workspace.createUiDefinition.json` names. Assets may return 404 until the `v0.1.0` release is published. Verify checksums from the same release before use.
+Portal definition assets use the corresponding `greenfield.createUiDefinition.json` and `existing-workspace.createUiDefinition.json` names. The `v0.1.0` GitHub Release is published with all required assets.
+
+A git tag and a GitHub Release are separate objects. The tag identifies the source revision; `/releases/download/<tag>/<asset>` requires a GitHub Release associated with that tag and an uploaded asset with that exact name. Before opening a Deploy to Azure link, complete the anonymous download, JSON parsing, and checksum procedure in [Verify the published release](release.md#verify-the-published-release).
+
+Asset verification proves publication integrity; it does not authorize or validate an Azure deployment. Preserve the native-first boundary: review the authoritative Microsoft control-plane ownership, then run Azure `validate` and `what-if` manually with separately authorized access before any `create` operation.
 
 ## Rollback
 

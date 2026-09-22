@@ -14,9 +14,10 @@ Use Semantic Versioning. A breaking change includes incompatible parameter/outpu
 6. Verify the existing-workspace path does not own unrelated resources.
 7. Generate compiled templates and copy the four upload-ready files to `generated/release-assets` using the exact flattened names below. Generate the release manifest and SHA-256 checksums from those packaged bytes.
 8. Confirm compiled artifacts exactly match tagged source.
-9. Tag `v<version>` and publish immutable assets.
-10. Test README release links and Deploy to Azure flows.
-11. Record validation evidence; do not perform a live deployment without separate authorization.
+9. Push the `v<version>` tag so `.github/workflows/release.yml` can build, verify, and publish the GitHub Release assets automatically.
+10. Run the anonymous published-release verification below.
+11. Test README release links and Deploy to Azure flows.
+12. Record validation evidence; do not perform a live deployment without separate authorization.
 
 ## Version 0.1.0 assets
 
@@ -31,15 +32,77 @@ release-manifest.json
 checksums.sha256
 ```
 
-They will be published under:
+They are published under:
 
 ```text
 https://github.com/x3nc0n/m365-copilot-governance-foundation/releases/download/v0.1.0/<asset>
 ```
 
-The URLs may not resolve until the tag and release are published.
+A git tag identifies a source revision, but it does not provide downloadable assets. A `/releases/download/<tag>/<asset>` URL requires both a GitHub Release associated with the tag and an uploaded asset with that exact name. The `v0.1.0` GitHub Release now contains all six assets listed above.
 
 `generated/release-manifest.json` and `generated/checksums.sha256` use these flattened upload names rather than source-tree paths. The two portal definitions are intentionally renamed during packaging so they cannot collide.
+
+## Automatic tag releases
+
+The tag-triggered workflow at `.github/workflows/release.yml` is the canonical automation for building, verifying, and publishing release assets for version tags. Do not treat a successful tag push alone as release completion: wait for the workflow and then verify the anonymously downloadable assets. The workflow file is authoritative for its implementation details.
+
+## Verify the published release
+
+Run this from PowerShell without GitHub authentication. It downloads every expected asset, parses every JSON asset, and verifies every payload covered by `checksums.sha256`. Do not consider the release complete unless the command succeeds.
+
+```powershell
+$tag = 'v0.1.0'
+$baseUri = "https://github.com/x3nc0n/m365-copilot-governance-foundation/releases/download/$tag"
+$assets = @(
+  'greenfield.json'
+  'greenfield.createUiDefinition.json'
+  'existing-workspace.json'
+  'existing-workspace.createUiDefinition.json'
+  'release-manifest.json'
+  'checksums.sha256'
+)
+$downloadRoot = Join-Path $PWD ".release-verification-$tag"
+New-Item -ItemType Directory -Path $downloadRoot -Force | Out-Null
+
+foreach ($asset in $assets) {
+  Invoke-WebRequest -Uri "$baseUri/$asset" -OutFile (Join-Path $downloadRoot $asset)
+}
+
+$assets |
+  Where-Object { $_ -like '*.json' } |
+  ForEach-Object {
+    Get-Content (Join-Path $downloadRoot $_) -Raw |
+      ConvertFrom-Json -ErrorAction Stop |
+      Out-Null
+  }
+
+$expected = @{}
+foreach ($line in Get-Content (Join-Path $downloadRoot 'checksums.sha256')) {
+  if ($line -notmatch '^([0-9a-fA-F]{64})\s{2}(.+)$') {
+    throw "Invalid checksum line: $line"
+  }
+  $expected[$Matches[2]] = $Matches[1].ToLowerInvariant()
+}
+
+$payloads = $assets | Where-Object { $_ -ne 'checksums.sha256' }
+if ($expected.Count -ne $payloads.Count) {
+  throw 'Checksum file does not describe every release payload.'
+}
+
+foreach ($asset in $payloads) {
+  if (-not $expected.ContainsKey($asset)) {
+    throw "Missing checksum for $asset"
+  }
+  $actual = (Get-FileHash (Join-Path $downloadRoot $asset) -Algorithm SHA256).Hash.ToLowerInvariant()
+  if ($actual -ne $expected[$asset]) {
+    throw "Checksum mismatch for $asset"
+  }
+}
+
+"Verified $($assets.Count) anonymous release assets for $tag."
+```
+
+This verifies publication and integrity only. It does not perform Azure authentication, Azure validation, `what-if`, deployment, or tenant-level checks. Those remain separately authorized manual gates under the native-first deployment model.
 
 ## Validation gates
 

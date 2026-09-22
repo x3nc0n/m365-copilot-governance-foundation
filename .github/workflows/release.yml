@@ -1,0 +1,111 @@
+name: Publish release assets
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out exact tag
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Install PowerShell validation modules
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module Pester -MinimumVersion 5.6.1 -Scope CurrentUser -Force
+          Install-Module PSScriptAnalyzer -MinimumVersion 1.22.0 -Scope CurrentUser -Force
+
+      - name: Run ScriptAnalyzer
+        shell: pwsh
+        run: |
+          $results = @(
+            './powershell', './scripts', './build' |
+              ForEach-Object { Invoke-ScriptAnalyzer -Path $_ -Recurse -Settings ./PSScriptAnalyzerSettings.psd1 }
+          )
+          $results | Format-Table -AutoSize
+          if ($results) { throw "PSScriptAnalyzer reported $($results.Count) issue(s)." }
+
+      - name: Run credential-free offline build
+        shell: pwsh
+        env:
+          AZURE_CONFIG_DIR: ${{ runner.temp }}/azure-config
+        run: ./build/Invoke-Build.ps1 -CI
+
+      - name: Verify deterministic release assets
+        shell: pwsh
+        env:
+          AZURE_CONFIG_DIR: ${{ runner.temp }}/azure-config
+        run: |
+          $assets = @(
+            'generated/release-assets/greenfield.json'
+            'generated/release-assets/existing-workspace.json'
+            'generated/release-assets/greenfield.createUiDefinition.json'
+            'generated/release-assets/existing-workspace.createUiDefinition.json'
+            'generated/release-manifest.json'
+            'generated/checksums.sha256'
+          )
+          $firstHashes = @{}
+          foreach ($asset in $assets) {
+            $firstHashes[$asset] = (Get-FileHash -LiteralPath $asset -Algorithm SHA256).Hash
+          }
+
+          ./build/Invoke-Build.ps1 -CI
+
+          foreach ($asset in $assets) {
+            if ((Get-FileHash -LiteralPath $asset -Algorithm SHA256).Hash -ne $firstHashes[$asset]) {
+              throw "Canonical build produced non-deterministic asset '$asset'."
+            }
+          }
+          git diff --exit-code -- generated infra/compiled
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Generated release assets do not match the exact tagged commit.'
+          }
+
+      - name: Create or update GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_COMMIT: ${{ github.sha }}
+        run: |
+          $notesPath = Join-Path $env:RUNNER_TEMP 'release-notes.md'
+          @"
+          Release assets for tag ``$env:RELEASE_TAG`` at commit ``$env:RELEASE_COMMIT``.
+
+          These assets passed the credential-free offline build and deterministic generation checks. Live Azure validation remains customer-specific and must be performed in the target tenant and subscription.
+          "@ | Set-Content -LiteralPath $notesPath -Encoding utf8NoBOM
+
+          gh release view $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release edit $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --title $env:RELEASE_TAG --notes-file $notesPath
+          }
+          else {
+            gh release create $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --verify-tag --title $env:RELEASE_TAG --notes-file $notesPath
+          }
+          if ($LASTEXITCODE -ne 0) {
+            throw "Unable to create or update release '$env:RELEASE_TAG'."
+          }
+
+          $assets = @(
+            'generated/release-assets/greenfield.json'
+            'generated/release-assets/existing-workspace.json'
+            'generated/release-assets/greenfield.createUiDefinition.json'
+            'generated/release-assets/existing-workspace.createUiDefinition.json'
+            'generated/release-manifest.json'
+            'generated/checksums.sha256'
+          )
+          gh release upload $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --clobber @assets
+          if ($LASTEXITCODE -ne 0) {
+            throw "Unable to upload assets for release '$env:RELEASE_TAG'."
+          }
