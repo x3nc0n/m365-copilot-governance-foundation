@@ -27,9 +27,55 @@ az bicep build --file .\infra\greenfield\main.bicep
 az bicep build --file .\infra\existing-workspace\main.bicep
 ```
 
-## Portal deployment link returns 404
+## Release or portal deployment link returns 404
 
-The README uses immutable `v0.1.0` release URLs. A 404 is expected until the release tag and assets are published. Do not replace the URL with a moving `main` or `dev` branch. Build locally or wait for the signed/checksummed release.
+Immutable deployment URLs require three separate GitHub objects: the tag, the GitHub Release associated with that tag, and the named release asset. Diagnose them in that order; do not replace an immutable URL with a moving `main` or `dev` branch.
+
+```powershell
+$Repository = 'x3nc0n/m365-copilot-governance-foundation'
+$Tag = 'v0.1.0'
+
+# 1. Confirm that the Git tag exists.
+gh api "repos/$Repository/git/ref/tags/$Tag"
+
+# 2. Confirm that a GitHub Release exists for the tag and inspect its assets.
+gh release view $Tag `
+  --repo $Repository `
+  --json tagName,isDraft,isPrerelease,url,assets
+```
+
+- If the first command returns `404`, the tag is missing or the repository/account cannot access it.
+- If the tag exists but `gh release view <tag>` reports that no release was found, the GitHub Release is missing.
+- If the release exists but the required filename is absent from `assets`, the release asset is missing or was published under a different name. Expected deployment filenames include `greenfield.json`, `existing-workspace.json`, their corresponding `*.createUiDefinition.json` files, `release-manifest.json`, and `checksums.sha256`.
+- If all three exist, confirm that the portal URL uses the exact tag and asset name, with correct URL encoding and no branch-based fallback.
+
+Test the public path without GitHub CLI credentials, then verify the downloaded asset against the release checksum:
+
+```powershell
+$Repository = 'x3nc0n/m365-copilot-governance-foundation'
+$Tag = 'v0.1.0'
+$Asset = 'greenfield.json'
+$BaseUri = "https://github.com/$Repository/releases/download/$Tag"
+
+Invoke-WebRequest -Uri "$BaseUri/$Asset" -OutFile ".\$Asset"
+Invoke-WebRequest -Uri "$BaseUri/checksums.sha256" -OutFile '.\checksums.sha256'
+
+$checksumLine = Get-Content '.\checksums.sha256' |
+  Where-Object { $_ -match "\s+$([regex]::Escape($Asset))$" }
+if (-not $checksumLine) {
+  throw "No checksum entry exists for $Asset."
+}
+
+$expected = ($checksumLine -split '\s+')[0].ToLowerInvariant()
+$actual = (Get-FileHash ".\$Asset" -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($actual -ne $expected) {
+  throw "Checksum mismatch for $Asset."
+}
+
+"Verified $Asset ($actual)"
+```
+
+`Invoke-WebRequest` uses the anonymous public release URL in this example. A private repository, unpublished release, draft release, organization access policy, proxy, or network filter can produce a different result from an authenticated maintainer command.
 
 ## Existing workspace shows unexpected changes
 
