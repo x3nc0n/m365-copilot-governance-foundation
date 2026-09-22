@@ -1,0 +1,60 @@
+let healthWindow = iff(isnull(lookback), 24h, lookback);
+let expected = datatable(
+    TableName:string,
+    AuthoritativeControlOwner:string,
+    NativePortalRoute:string,
+    RequiredForMvp:bool,
+    ExpectedFreshness:timespan
+)
+[
+    "CopilotActivity", "Microsoft Purview Audit / Microsoft 365 audit", "https://purview.microsoft.com/audit", true, 6h,
+    "SecurityAlert", "Originating Microsoft Defender, Entra, or Purview alert provider", "https://security.microsoft.com/alerts", true, 2h,
+    "SecurityIncident", "Microsoft Sentinel investigation container", "https://portal.azure.com/#view/Microsoft_Azure_Security_Insights/WorkspaceSelectorBlade", true, 2h,
+    "SigninLogs", "Microsoft Entra ID", "https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/SignIns", true, 2h,
+    "AADNonInteractiveUserSignInLogs", "Microsoft Entra ID", "https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/SignIns", false, 2h,
+    "AuditLogs", "Microsoft Entra ID", "https://entra.microsoft.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Audit", true, 4h,
+    "IdentityInfo", "Microsoft Defender XDR", "https://security.microsoft.com/", false, 24h,
+    "CloudAppEvents", "Microsoft Defender for Cloud Apps", "https://security.microsoft.com/cloudapps", false, 4h,
+    "AlertInfo", "Microsoft Defender XDR", "https://security.microsoft.com/alerts", false, 2h,
+    "AlertEvidence", "Microsoft Defender XDR", "https://security.microsoft.com/alerts", false, 2h,
+    "DeviceEvents", "Microsoft Defender for Endpoint", "https://security.microsoft.com/advanced-hunting", false, 4h,
+    "IdentityLogonEvents", "Microsoft Defender for Identity / Defender XDR", "https://security.microsoft.com/advanced-hunting", false, 4h,
+    "IdentityDirectoryEvents", "Microsoft Defender for Identity / Defender XDR", "https://security.microsoft.com/advanced-hunting", false, 4h,
+    "IdentityQueryEvents", "Microsoft Defender for Identity / Defender XDR", "https://security.microsoft.com/advanced-hunting", false, 4h,
+    "MicrosoftPurviewInformationProtection", "Microsoft Purview Information Protection", "https://purview.microsoft.com/", false, 24h,
+    "OfficeActivity", "Microsoft Purview Audit / Microsoft 365 workloads", "https://purview.microsoft.com/audit", true, 6h,
+    "EnrichedMicrosoft365AuditLogs", "Microsoft Purview Audit", "https://purview.microsoft.com/audit", false, 6h,
+    "NetworkAccessGenerativeAIInsights", "Microsoft Entra Global Secure Access (preview)", "https://entra.microsoft.com/", false, 6h
+];
+let observed =
+    union isfuzzy=true
+    (CopilotActivity | where TimeGenerated > ago(healthWindow) | project TableName="CopilotActivity", TimeGenerated),
+    (SecurityAlert | where TimeGenerated > ago(healthWindow) | project TableName="SecurityAlert", TimeGenerated),
+    (SecurityIncident | where TimeGenerated > ago(healthWindow) | project TableName="SecurityIncident", TimeGenerated),
+    (SigninLogs | where TimeGenerated > ago(healthWindow) | project TableName="SigninLogs", TimeGenerated),
+    (AADNonInteractiveUserSignInLogs | where TimeGenerated > ago(healthWindow) | project TableName="AADNonInteractiveUserSignInLogs", TimeGenerated),
+    (AuditLogs | where TimeGenerated > ago(healthWindow) | project TableName="AuditLogs", TimeGenerated),
+    (IdentityInfo | where TimeGenerated > ago(healthWindow) | project TableName="IdentityInfo", TimeGenerated),
+    (CloudAppEvents | where TimeGenerated > ago(healthWindow) | project TableName="CloudAppEvents", TimeGenerated),
+    (AlertInfo | where TimeGenerated > ago(healthWindow) | project TableName="AlertInfo", TimeGenerated),
+    (AlertEvidence | where TimeGenerated > ago(healthWindow) | project TableName="AlertEvidence", TimeGenerated),
+    (DeviceEvents | where TimeGenerated > ago(healthWindow) | project TableName="DeviceEvents", TimeGenerated),
+    (IdentityLogonEvents | where TimeGenerated > ago(healthWindow) | project TableName="IdentityLogonEvents", TimeGenerated),
+    (IdentityDirectoryEvents | where TimeGenerated > ago(healthWindow) | project TableName="IdentityDirectoryEvents", TimeGenerated),
+    (IdentityQueryEvents | where TimeGenerated > ago(healthWindow) | project TableName="IdentityQueryEvents", TimeGenerated),
+    (MicrosoftPurviewInformationProtection | where TimeGenerated > ago(healthWindow) | project TableName="MicrosoftPurviewInformationProtection", TimeGenerated),
+    (OfficeActivity | where TimeGenerated > ago(healthWindow) | project TableName="OfficeActivity", TimeGenerated),
+    (EnrichedMicrosoft365AuditLogs | where TimeGenerated > ago(healthWindow) | project TableName="EnrichedMicrosoft365AuditLogs", TimeGenerated),
+    (NetworkAccessGenerativeAIInsights | where TimeGenerated > ago(healthWindow) | project TableName="NetworkAccessGenerativeAIInsights", TimeGenerated),
+    (datatable(TableName:string, TimeGenerated:datetime)[])
+    | summarize LastEventTime=max(TimeGenerated), EventCount=count() by TableName;
+expected
+| join kind=leftouter observed on TableName
+| extend
+    Age = now() - LastEventTime,
+    Status = case(
+        isnull(LastEventTime), "UnavailableOrSilent",
+        Age > ExpectedFreshness, "Stale",
+        "Healthy"),
+    GovernanceFunction = "M365Gov_DataHealth"
+| project-away TableName1

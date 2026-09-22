@@ -1,0 +1,91 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+  "handler": "Microsoft.Azure.CreateUIDef",
+  "version": "0.1.2-preview",
+  "parameters": {
+    "basics": [
+      {
+        "name": "location",
+        "type": "Microsoft.Common.Location",
+        "label": "Workbook location",
+        "toolTip": "Azure region used for regional content resources. The existing workspace is not modified.",
+        "resourceTypes": [
+          "Microsoft.Insights/workbooks"
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "name": "workspace",
+        "label": "Existing workspace",
+        "elements": [
+          {
+            "name": "workspaceResourceId",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Workspace resource ID",
+            "toolTip": "Full resource ID of an existing Log Analytics workspace that is already onboarded to Microsoft Sentinel.",
+            "constraints": {
+              "required": true,
+              "regex": "^/subscriptions/[0-9a-fA-F-]{36}/resourceGroups/[^/]+/providers/Microsoft\\.OperationalInsights/workspaces/[^/]+$",
+              "validationMessage": "Enter a full Log Analytics workspace resource ID."
+            }
+          }
+        ]
+      },
+      {
+        "name": "content",
+        "label": "Solution content",
+        "elements": [
+          {
+            "name": "resourceNamePrefix",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Resource name prefix",
+            "defaultValue": "m365gov",
+            "constraints": {
+              "required": true,
+              "regex": "^[A-Za-z0-9-]{1,32}$",
+              "validationMessage": "Use 1-32 letters, numbers, or hyphens."
+            }
+          },
+          {
+            "name": "deployFunctions",
+            "type": "Microsoft.Common.CheckBox",
+            "label": "Deploy KQL functions",
+            "defaultValue": true
+          },
+          {
+            "name": "deployAnalytics",
+            "type": "Microsoft.Common.CheckBox",
+            "label": "Deploy analytic rules",
+            "defaultValue": true
+          },
+          {
+            "name": "analyticsEnabled",
+            "type": "Microsoft.Common.CheckBox",
+            "label": "Enable analytic rules immediately",
+            "defaultValue": false,
+            "toolTip": "Leave disabled until source prerequisites and expected query behavior are validated."
+          },
+          {
+            "name": "deployWorkbooks",
+            "type": "Microsoft.Common.CheckBox",
+            "label": "Deploy workbooks",
+            "defaultValue": true
+          }
+        ]
+      }
+    ],
+    "outputs": {
+      "location": "[basics('location')]",
+      "solutionName": "m365CopilotGovernance",
+      "solutionVersion": "0.1.0",
+      "resourceNamePrefix": "[steps('content').resourceNamePrefix]",
+      "deployFunctions": "[steps('content').deployFunctions]",
+      "deployAnalytics": "[steps('content').deployAnalytics]",
+      "deployWorkbooks": "[steps('content').deployWorkbooks]",
+      "analyticsEnabled": "[steps('content').analyticsEnabled]",
+      "tags": {},
+      "workspaceResourceId": "[steps('workspace').workspaceResourceId]"
+    }
+  }
+}

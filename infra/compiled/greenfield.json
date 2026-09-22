@@ -1,0 +1,1023 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.44.1.10279",
+      "templateHash": "10374701181958195633"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Azure region for all resources."
+      }
+    },
+    "solutionName": {
+      "type": "string",
+      "defaultValue": "m365CopilotGovernance",
+      "minLength": 1,
+      "metadata": {
+        "description": "Stable solution identifier."
+      }
+    },
+    "solutionVersion": {
+      "type": "string",
+      "defaultValue": "0.1.0",
+      "minLength": 1,
+      "metadata": {
+        "description": "Solution content version."
+      }
+    },
+    "resourceNamePrefix": {
+      "type": "string",
+      "defaultValue": "m365gov",
+      "minLength": 1,
+      "maxLength": 32,
+      "metadata": {
+        "description": "Prefix used for deployable resource names."
+      }
+    },
+    "deployFunctions": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether KQL functions should be deployed."
+      }
+    },
+    "deployAnalytics": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether analytic rule resources should be deployed."
+      }
+    },
+    "deployWorkbooks": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether workbook resources should be deployed."
+      }
+    },
+    "analyticsEnabled": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Whether deployed analytic rules should be enabled."
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Resource tags applied where supported."
+      }
+    },
+    "workspaceName": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 63,
+      "metadata": {
+        "description": "Name of the Log Analytics workspace to create."
+      }
+    },
+    "workspaceSku": {
+      "type": "string",
+      "defaultValue": "PerGB2018",
+      "metadata": {
+        "description": "Log Analytics workspace SKU."
+      }
+    },
+    "workspaceRetentionInDays": {
+      "type": "int",
+      "defaultValue": 30,
+      "minValue": 30,
+      "maxValue": 730,
+      "metadata": {
+        "description": "Workspace retention in days."
+      }
+    }
+  },
+  "variables": {
+    "solutionTags": "[union(parameters('tags'), createObject('Solution', parameters('solutionName'), 'SolutionVersion', parameters('solutionVersion'), 'ResourceNamePrefix', parameters('resourceNamePrefix'), 'DeploymentMode', 'greenfield'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[format('{0}-workspace', parameters('resourceNamePrefix'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "workspaceName": {
+            "value": "[parameters('workspaceName')]"
+          },
+          "workspaceSku": {
+            "value": "[parameters('workspaceSku')]"
+          },
+          "workspaceRetentionInDays": {
+            "value": "[parameters('workspaceRetentionInDays')]"
+          },
+          "tags": {
+            "value": "[variables('solutionTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.44.1.10279",
+              "templateHash": "7061659093727315122"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Azure region for the Log Analytics workspace."
+              }
+            },
+            "workspaceName": {
+              "type": "string",
+              "minLength": 4,
+              "maxLength": 63,
+              "metadata": {
+                "description": "Name of the Log Analytics workspace."
+              }
+            },
+            "workspaceSku": {
+              "type": "string",
+              "defaultValue": "PerGB2018",
+              "allowedValues": [
+                "CapacityReservation",
+                "Free",
+                "LACluster",
+                "PerGB2018",
+                "PerNode",
+                "Premium",
+                "Standalone",
+                "Standard"
+              ],
+              "metadata": {
+                "description": "Log Analytics workspace SKU."
+              }
+            },
+            "workspaceRetentionInDays": {
+              "type": "int",
+              "defaultValue": 30,
+              "minValue": 30,
+              "maxValue": 730,
+              "metadata": {
+                "description": "Workspace retention in days."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Resource tags applied to the workspace."
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.OperationalInsights/workspaces",
+              "apiVersion": "2022-10-01",
+              "name": "[parameters('workspaceName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "sku": {
+                  "name": "[parameters('workspaceSku')]"
+                },
+                "retentionInDays": "[parameters('workspaceRetentionInDays')]",
+                "features": {
+                  "enableLogAccessUsingOnlyResourcePermissions": true
+                },
+                "publicNetworkAccessForIngestion": "Enabled",
+                "publicNetworkAccessForQuery": "Enabled"
+              }
+            }
+          ],
+          "outputs": {
+            "workspaceResourceId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]"
+            },
+            "workspaceName": {
+              "type": "string",
+              "value": "[parameters('workspaceName')]"
+            },
+            "workspaceLocation": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName')), '2022-10-01', 'full').location]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[format('{0}-sentinel', parameters('resourceNamePrefix'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "workspaceResourceId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('{0}-workspace', parameters('resourceNamePrefix'))), '2025-04-01').outputs.workspaceResourceId.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.44.1.10279",
+              "templateHash": "3553832288315237592"
+            }
+          },
+          "parameters": {
+            "workspaceResourceId": {
+              "type": "string",
+              "metadata": {
+                "description": "Resource ID of the Log Analytics workspace to onboard."
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.SecurityInsights/onboardingStates",
+              "apiVersion": "2024-03-01",
+              "scope": "[resourceId('Microsoft.OperationalInsights/workspaces', last(split(parameters('workspaceResourceId'), '/')))]",
+              "name": "default",
+              "properties": {
+                "customerManagedKey": false
+              }
+            }
+          ],
+          "outputs": {
+            "sentinelOnboardingStateResourceId": {
+              "type": "string",
+              "value": "[extensionResourceId(resourceId('Microsoft.OperationalInsights/workspaces', last(split(parameters('workspaceResourceId'), '/'))), 'Microsoft.SecurityInsights/onboardingStates', 'default')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', format('{0}-workspace', parameters('resourceNamePrefix')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[format('{0}-content', parameters('resourceNamePrefix'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "workspaceResourceId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('{0}-workspace', parameters('resourceNamePrefix'))), '2025-04-01').outputs.workspaceResourceId.value]"
+          },
+          "deployFunctions": {
+            "value": "[parameters('deployFunctions')]"
+          },
+          "deployAnalytics": {
+            "value": "[parameters('deployAnalytics')]"
+          },
+          "deployWorkbooks": {
+            "value": "[parameters('deployWorkbooks')]"
+          },
+          "analyticsEnabled": {
+            "value": "[parameters('analyticsEnabled')]"
+          },
+          "tags": {
+            "value": "[variables('solutionTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.44.1.10279",
+              "templateHash": "4112678697848111986"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Azure region for regional content resources."
+              }
+            },
+            "workspaceResourceId": {
+              "type": "string",
+              "metadata": {
+                "description": "Resource ID of the target Log Analytics workspace."
+              }
+            },
+            "deployFunctions": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Whether KQL functions should be deployed."
+              }
+            },
+            "deployAnalytics": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Whether analytic rule resources should be deployed."
+              }
+            },
+            "deployWorkbooks": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Whether workbook resources should be deployed."
+              }
+            },
+            "analyticsEnabled": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Whether deployed analytic rules should be enabled."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Resource tags applied where supported."
+              }
+            }
+          },
+          "variables": {
+            "$fxv#0": {
+              "schemaVersion": "1.0.0",
+              "solutionVersion": "0.1.0",
+              "functions": [
+                {
+                  "id": "M365Gov_AiActivity",
+                  "resourceName": "M365Gov_AiActivity",
+                  "displayName": "M365 Governance AI Activity",
+                  "version": "0.1.0",
+                  "source": "src/functions/M365Gov_AiActivity.kql",
+                  "metadata": "src/functions/M365Gov_AiActivity.metadata.json",
+                  "sha256": "2f562426dbe216ff28914e33035aa9018bd6a0b985a22ca3cf713e7ad57c60ee",
+                  "controlOwner": "The source AI platform and its native governance service",
+                  "category": "M365 Copilot Governance",
+                  "functionAlias": "M365Gov_AiActivity",
+                  "functionParameters": "starttime:datetime = ago(14d), endtime:datetime = now()",
+                  "query": "_Im_AgentEvent(starttime=starttime, endtime=endtime)\r\n| project\r\n    TimeGenerated,\r\n    EventStartTime,\r\n    EventEndTime,\r\n    IngestionTime = ingestion_time(),\r\n    EventUid,\r\n    EventOriginalUid,\r\n    EventType,\r\n    EventOriginalType,\r\n    EventResult,\r\n    EventResultDetails,\r\n    ActorUsername,\r\n    ActorUserId,\r\n    ActingAppId,\r\n    ActingAppName,\r\n    SrcAgentId,\r\n    SrcAgentName,\r\n    TargetAgentId,\r\n    TargetAgentName,\r\n    PlatformTargetAgentId,\r\n    PlatformTargetAgentName,\r\n    ModelProviderName,\r\n    ModelName,\r\n    ToolId,\r\n    ToolName,\r\n    EventSessionId,\r\n    EventRequestId,\r\n    EventResponseId,\r\n    EventProduct,\r\n    EventVendor,\r\n    EventSchema,\r\n    EventSchemaVersion\r\n| extend\r\n    GovernanceFunction = \"M365Gov_AiActivity\",\r\n    AuthoritativeControlOwner = \"Source AI platform; Microsoft Sentinel ASIM provides normalization\",\r\n    NativePortalRoute = \"https://security.microsoft.com/\""
+                },
+                {
+                  "id": "M365Gov_AuthenticationEvents",
+                  "resourceName": "M365Gov_AuthenticationEvents",
+                  "displayName": "M365 Governance Authentication Events",
+                  "version": "0.1.0",
+                  "source": "src/functions/M365Gov_AuthenticationEvents.kql",
+                  "metadata": "src/functions/M365Gov_AuthenticationEvents.metadata.json",
+                  "sha256": "1ecf17709d511228bf1dffe609120c0877d58595aa1a11133d36dd1ef7b411fb",
+                  "controlOwner": "Microsoft Entra ID or the authentication source represented by ASIM",
+                  "category": "M365 Copilot Governance",
+                  "functionAlias": "M365Gov_AuthenticationEvents",
+                  "functionParameters": "starttime:datetime = ago(14d), endtime:datetime = now()",
+                  "query": "_Im_Authentication(starttime=starttime, endtime=endtime)\r\n| project\r\n    TimeGenerated,\r\n    EventStartTime,\r\n    EventEndTime,\r\n    IngestionTime = ingestion_time(),\r\n    EventUid,\r\n    EventType,\r\n    EventResult,\r\n    EventResultDetails,\r\n    EventOriginalResultDetails,\r\n    ActorUsername,\r\n    ActorUserId,\r\n    TargetUsername,\r\n    TargetUserId,\r\n    SrcIpAddr,\r\n    SrcGeoCountry,\r\n    TargetAppName,\r\n    TargetAppId,\r\n    LogonMethod,\r\n    EventProduct,\r\n    EventVendor,\r\n    EventSchema,\r\n    EventSchemaVersion\r\n| extend\r\n    GovernanceFunction = \"M365Gov_AuthenticationEvents\",\r\n    AuthoritativeControlOwner = \"Microsoft Entra ID and the source authentication provider\",\r\n    NativePortalRoute = \"https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/SignIns\""
+                },
+                {
+                  "id": "M365Gov_DataHealth",
+                  "resourceName": "M365Gov_DataHealth",
+                  "displayName": "M365 Governance Data Health",
+                  "version": "0.1.0",
+                  "source": "src/functions/M365Gov_DataHealth.kql",
+                  "metadata": "src/functions/M365Gov_DataHealth.metadata.json",
+                  "sha256": "c18b5cda723283d07d3c69f76f6ededa1568151b433aabc03080935a09dd31d0",
+                  "controlOwner": "Each source product owns its telemetry; Microsoft Sentinel owns workspace ingestion health",
+                  "category": "M365 Copilot Governance",
+                  "functionAlias": "M365Gov_DataHealth",
+                  "functionParameters": "lookback:timespan = 24h",
+                  "query": "let healthWindow = iff(isnull(lookback), 24h, lookback);\r\nlet expected = datatable(\r\n    TableName:string,\r\n    AuthoritativeControlOwner:string,\r\n    NativePortalRoute:string,\r\n    RequiredForMvp:bool,\r\n    ExpectedFreshness:timespan\r\n)\r\n[\r\n    \"CopilotActivity\", \"Microsoft Purview Audit / Microsoft 365 audit\", \"https://purview.microsoft.com/audit\", true, 6h,\r\n    \"SecurityAlert\", \"Originating Microsoft Defender, Entra, or Purview alert provider\", \"https://security.microsoft.com/alerts\", true, 2h,\r\n    \"SecurityIncident\", \"Microsoft Sentinel investigation container\", \"https://portal.azure.com/#view/Microsoft_Azure_Security_Insights/WorkspaceSelectorBlade\", true, 2h,\r\n    \"SigninLogs\", \"Microsoft Entra ID\", \"https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/SignIns\", true, 2h,\r\n    \"AADNonInteractiveUserSignInLogs\", \"Microsoft Entra ID\", \"https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/SignIns\", false, 2h,\r\n    \"AuditLogs\", \"Microsoft Entra ID\", \"https://entra.microsoft.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Audit\", true, 4h,\r\n    \"IdentityInfo\", \"Microsoft Defender XDR\", \"https://security.microsoft.com/\", false, 24h,\r\n    \"CloudAppEvents\", \"Microsoft Defender for Cloud Apps\", \"https://security.microsoft.com/cloudapps\", false, 4h,\r\n    \"AlertInfo\", \"Microsoft Defender XDR\", \"https://security.microsoft.com/alerts\", false, 2h,\r\n    \"AlertEvidence\", \"Microsoft Defender XDR\", \"https://security.microsoft.com/alerts\", false, 2h,\r\n    \"DeviceEvents\", \"Microsoft Defender for Endpoint\", \"https://security.microsoft.com/advanced-hunting\", false, 4h,\r\n    \"IdentityLogonEvents\", \"Microsoft Defender for Identity / Defender XDR\", \"https://security.microsoft.com/advanced-hunting\", false, 4h,\r\n    \"IdentityDirectoryEvents\", \"Microsoft Defender for Identity / Defender XDR\", \"https://security.microsoft.com/advanced-hunting\", false, 4h,\r\n    \"IdentityQueryEvents\", \"Microsoft Defender for Identity / Defender XDR\", \"https://security.microsoft.com/advanced-hunting\", false, 4h,\r\n    \"MicrosoftPurviewInformationProtection\", \"Microsoft Purview Information Protection\", \"https://purview.microsoft.com/\", false, 24h,\r\n    \"OfficeActivity\", \"Microsoft Purview Audit / Microsoft 365 workloads\", \"https://purview.microsoft.com/audit\", true, 6h,\r\n    \"EnrichedMicrosoft365AuditLogs\", \"Microsoft Purview Audit\", \"https://purview.microsoft.com/audit\", false, 6h,\r\n    \"NetworkAccessGenerativeAIInsights\", \"Microsoft Entra Global Secure Access (preview)\", \"https://entra.microsoft.com/\", false, 6h\r\n];\r\nlet observed =\r\n    union isfuzzy=true\r\n    (CopilotActivity | where TimeGenerated > ago(healthWindow) | project TableName=\"CopilotActivity\", TimeGenerated),\r\n    (SecurityAlert | where TimeGenerated > ago(healthWindow) | project TableName=\"SecurityAlert\", TimeGenerated),\r\n    (SecurityIncident | where TimeGenerated > ago(healthWindow) | project TableName=\"SecurityIncident\", TimeGenerated),\r\n    (SigninLogs | where TimeGenerated > ago(healthWindow) | project TableName=\"SigninLogs\", TimeGenerated),\r\n    (AADNonInteractiveUserSignInLogs | where TimeGenerated > ago(healthWindow) | project TableName=\"AADNonInteractiveUserSignInLogs\", TimeGenerated),\r\n    (AuditLogs | where TimeGenerated > ago(healthWindow) | project TableName=\"AuditLogs\", TimeGenerated),\r\n    (IdentityInfo | where TimeGenerated > ago(healthWindow) | project TableName=\"IdentityInfo\", TimeGenerated),\r\n    (CloudAppEvents | where TimeGenerated > ago(healthWindow) | project TableName=\"CloudAppEvents\", TimeGenerated),\r\n    (AlertInfo | where TimeGenerated > ago(healthWindow) | project TableName=\"AlertInfo\", TimeGenerated),\r\n    (AlertEvidence | where TimeGenerated > ago(healthWindow) | project TableName=\"AlertEvidence\", TimeGenerated),\r\n    (DeviceEvents | where TimeGenerated > ago(healthWindow) | project TableName=\"DeviceEvents\", TimeGenerated),\r\n    (IdentityLogonEvents | where TimeGenerated > ago(healthWindow) | project TableName=\"IdentityLogonEvents\", TimeGenerated),\r\n    (IdentityDirectoryEvents | where TimeGenerated > ago(healthWindow) | project TableName=\"IdentityDirectoryEvents\", TimeGenerated),\r\n    (IdentityQueryEvents | where TimeGenerated > ago(healthWindow) | project TableName=\"IdentityQueryEvents\", TimeGenerated),\r\n    (MicrosoftPurviewInformationProtection | where TimeGenerated > ago(healthWindow) | project TableName=\"MicrosoftPurviewInformationProtection\", TimeGenerated),\r\n    (OfficeActivity | where TimeGenerated > ago(healthWindow) | project TableName=\"OfficeActivity\", TimeGenerated),\r\n    (EnrichedMicrosoft365AuditLogs | where TimeGenerated > ago(healthWindow) | project TableName=\"EnrichedMicrosoft365AuditLogs\", TimeGenerated),\r\n    (NetworkAccessGenerativeAIInsights | where TimeGenerated > ago(healthWindow) | project TableName=\"NetworkAccessGenerativeAIInsights\", TimeGenerated),\r\n    (datatable(TableName:string, TimeGenerated:datetime)[])\r\n    | summarize LastEventTime=max(TimeGenerated), EventCount=count() by TableName;\r\nexpected\r\n| join kind=leftouter observed on TableName\r\n| extend\r\n    Age = now() - LastEventTime,\r\n    Status = case(\r\n        isnull(LastEventTime), \"UnavailableOrSilent\",\r\n        Age > ExpectedFreshness, \"Stale\",\r\n        \"Healthy\"),\r\n    GovernanceFunction = \"M365Gov_DataHealth\"\r\n| project-away TableName1"
+                },
+                {
+                  "id": "M365Gov_NativeAlerts",
+                  "resourceName": "M365Gov_NativeAlerts",
+                  "displayName": "M365 Governance Native Alerts",
+                  "version": "0.1.0",
+                  "source": "src/functions/M365Gov_NativeAlerts.kql",
+                  "metadata": "src/functions/M365Gov_NativeAlerts.metadata.json",
+                  "sha256": "5cb8afe7ff77780fe3c05877e565fb1d2c1453666c7e2da9c74dd6b77e5de86d",
+                  "controlOwner": "Originating Microsoft security or compliance product",
+                  "category": "M365 Copilot Governance",
+                  "functionAlias": "M365Gov_NativeAlerts",
+                  "functionParameters": "starttime:datetime = datetime(null), endtime:datetime = datetime(null)",
+                  "query": "let alertLookback = iff(isnull(starttime), ago(14d), starttime);\r\nlet alertEnd = iff(isnull(endtime), now(), endtime);\r\nunion isfuzzy=true\r\n(\r\n    SecurityAlert\r\n    | where TimeGenerated between (alertLookback .. alertEnd)\r\n    | project\r\n        TimeGenerated,\r\n        IngestionTime = ingestion_time(),\r\n        SourceTable = \"SecurityAlert\",\r\n        NativeRecordId = tostring(SystemAlertId),\r\n        NativeIncidentNumber = \"\",\r\n        AlertName = tostring(AlertName),\r\n        AlertSeverity = tostring(AlertSeverity),\r\n        AlertStatus = tostring(AlertStatus),\r\n        ProductName = tostring(ProductName),\r\n        ProviderName = tostring(ProviderName),\r\n        AuthoritativeControlOwner = case(\r\n            ProductName has \"Entra\" or ProviderName has \"Entra\", \"Microsoft Entra\",\r\n            ProductName has \"Purview\" or ProviderName has \"Purview\", \"Microsoft Purview\",\r\n            ProductName has \"Defender\" or ProviderName has \"Defender\", \"Microsoft Defender\",\r\n            \"Source product represented by the native alert\"),\r\n        ActorIdentifier = tostring(CompromisedEntity),\r\n        TenantIdentifier = tostring(TenantId),\r\n        NativePortalRoute = \"https://security.microsoft.com/alerts\",\r\n        SourceDescription = tostring(Description)\r\n),\r\n(\r\n    SecurityIncident\r\n    | where TimeGenerated between (alertLookback .. alertEnd)\r\n    | project\r\n        TimeGenerated,\r\n        IngestionTime = ingestion_time(),\r\n        SourceTable = \"SecurityIncident\",\r\n        NativeRecordId = tostring(IncidentName),\r\n        NativeIncidentNumber = tostring(IncidentNumber),\r\n        AlertName = tostring(Title),\r\n        AlertSeverity = tostring(Severity),\r\n        AlertStatus = tostring(Status),\r\n        ProductName = \"Microsoft Sentinel incident\",\r\n        ProviderName = tostring(ProviderName),\r\n        AuthoritativeControlOwner = \"Microsoft Sentinel (incident container); originating products retain control ownership\",\r\n        ActorIdentifier = \"\",\r\n        TenantIdentifier = tostring(TenantId),\r\n        NativePortalRoute = \"https://portal.azure.com/#view/Microsoft_Azure_Security_Insights/WorkspaceSelectorBlade\",\r\n        SourceDescription = tostring(Description)\r\n)\r\n| where isnotempty(NativeRecordId)\r\n| extend GovernanceFunction = \"M365Gov_NativeAlerts\""
+                }
+              ],
+              "analytics": [
+                {
+                  "id": "M365Gov-CrossProduct-AlertCorrelation",
+                  "resourceName": "M365Gov-CrossProduct-AlertCorrelation",
+                  "displayName": "M365 Governance - Cross-Product Native Alert Correlation",
+                  "version": "0.1.0",
+                  "source": "src/analytics/M365Gov-CrossProduct-AlertCorrelation.kql",
+                  "metadata": "src/analytics/M365Gov-CrossProduct-AlertCorrelation.metadata.json",
+                  "sha256": "bb32ec67639078397aeac5e4c398021a68f2b4b8554d1cd0aba1ab108c19849c",
+                  "controlOwner": "Each originating Microsoft alert provider",
+                  "description": "Correlation requires the same non-empty CompromisedEntity representation. A shared entity does not prove a common root cause. The rule does not reproduce native alert logic or inspect prompt content.",
+                  "enabledByDefault": false,
+                  "severity": "Medium",
+                  "query": "let correlationWindow = 1h;\r\nlet alerts =\r\n    M365Gov_NativeAlerts(ago(1d), now())\r\n    | where SourceTable == \"SecurityAlert\"\r\n    | where isnotempty(ActorIdentifier)\r\n    | project\r\n        TimeGenerated,\r\n        NativeRecordId,\r\n        AlertName,\r\n        AlertSeverity,\r\n        ProductName,\r\n        ProviderName,\r\n        AuthoritativeControlOwner,\r\n        ActorIdentifier,\r\n        NativePortalRoute;\r\nalerts\r\n| join kind=inner alerts on ActorIdentifier\r\n| where NativeRecordId < NativeRecordId1\r\n| where abs(datetime_diff(\"minute\", TimeGenerated, TimeGenerated1)) <= toint(correlationWindow / 1m)\r\n| where ProductName != ProductName1 or ProviderName != ProviderName1\r\n| extend\r\n    AlertTitle = \"Cross-product native alert correlation\",\r\n    AlertDescription = \"Two existing native alerts from different product or provider contexts reference the same compromised entity within one hour. Investigate in each authoritative native portal.\",\r\n    AccountCustomEntity = ActorIdentifier\r\n| project\r\n    TimeGenerated=max_of(TimeGenerated, TimeGenerated1),\r\n    AlertTitle,\r\n    AlertDescription,\r\n    ActorIdentifier,\r\n    FirstAlertId=NativeRecordId,\r\n    FirstAlertName=AlertName,\r\n    FirstSeverity=AlertSeverity,\r\n    FirstProduct=ProductName,\r\n    FirstProvider=ProviderName,\r\n    FirstOwner=AuthoritativeControlOwner,\r\n    FirstPortal=NativePortalRoute,\r\n    SecondAlertId=NativeRecordId1,\r\n    SecondAlertName=AlertName1,\r\n    SecondSeverity=AlertSeverity1,\r\n    SecondProduct=ProductName1,\r\n    SecondProvider=ProviderName1,\r\n    SecondOwner=AuthoritativeControlOwner1,\r\n    SecondPortal=NativePortalRoute1,\r\n    AccountCustomEntity",
+                  "queryFrequency": "PT15M",
+                  "queryPeriod": "P1D",
+                  "triggerOperator": "GreaterThan",
+                  "triggerThreshold": 0,
+                  "suppressionDuration": "PT1H",
+                  "suppressionEnabled": false,
+                  "eventGroupingAggregationKind": "SingleAlert",
+                  "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                      "enabled": false,
+                      "reopenClosedIncident": false,
+                      "lookbackDuration": "PT1H",
+                      "matchingMethod": "AllEntities",
+                      "groupByEntities": [],
+                      "groupByAlertDetails": [],
+                      "groupByCustomDetails": []
+                    }
+                  },
+                  "entityMappings": [
+                    {
+                      "entityType": "Account",
+                      "fieldMappings": [
+                        {
+                          "identifier": "Name",
+                          "columnName": "AccountCustomEntity"
+                        }
+                      ]
+                    }
+                  ],
+                  "alertDetailsOverride": {},
+                  "customDetails": {},
+                  "tactics": [],
+                  "techniques": []
+                },
+                {
+                  "id": "M365Gov-DataSource-Silence",
+                  "resourceName": "M365Gov-DataSource-Silence",
+                  "displayName": "M365 Governance - Required Data Source Silence",
+                  "version": "0.1.0",
+                  "source": "src/analytics/M365Gov-DataSource-Silence.kql",
+                  "metadata": "src/analytics/M365Gov-DataSource-Silence.metadata.json",
+                  "sha256": "b0d62b5eea67c279785acdde6556354aa100a399256b4f2e2fd4bb386889102b",
+                  "controlOwner": "Microsoft Sentinel operations for connector health; source products own telemetry",
+                  "description": "UnavailableOrSilent can mean absent, unauthorized, unlicensed, disabled, or no events. A stale source may be normal for a quiet tenant. This analytic reports health only and does not infer misconduct or risk.",
+                  "enabledByDefault": false,
+                  "severity": "Low",
+                  "query": "M365Gov_DataHealth(24h)\r\n| where RequiredForMvp\r\n| where Status in (\"UnavailableOrSilent\", \"Stale\")\r\n| extend\r\n    AlertTitle = strcat(\"M365 governance data source \", Status, \": \", TableName),\r\n    AlertDescription = strcat(\r\n        \"The required native source is \", Status,\r\n        \". This is an operational-health signal, not evidence that no security, compliance, identity, or AI activity occurred. Validate the connector, licensing, permissions, and native portal.\"),\r\n    SourceCustomEntity = TableName\r\n| project\r\n    TimeGenerated=now(),\r\n    AlertTitle,\r\n    AlertDescription,\r\n    TableName,\r\n    Status,\r\n    LastEventTime,\r\n    Age,\r\n    ExpectedFreshness,\r\n    EventCount,\r\n    AuthoritativeControlOwner,\r\n    NativePortalRoute,\r\n    SourceCustomEntity",
+                  "queryFrequency": "PT1H",
+                  "queryPeriod": "P1D",
+                  "triggerOperator": "GreaterThan",
+                  "triggerThreshold": 0,
+                  "suppressionDuration": "PT6H",
+                  "suppressionEnabled": false,
+                  "eventGroupingAggregationKind": "SingleAlert",
+                  "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                      "enabled": false,
+                      "reopenClosedIncident": false,
+                      "lookbackDuration": "PT6H",
+                      "matchingMethod": "AllEntities",
+                      "groupByEntities": [],
+                      "groupByAlertDetails": [],
+                      "groupByCustomDetails": []
+                    }
+                  },
+                  "entityMappings": [],
+                  "alertDetailsOverride": {},
+                  "customDetails": {},
+                  "tactics": [],
+                  "techniques": []
+                },
+                {
+                  "id": "M365Gov-NativeAlert-RiskyIdentity",
+                  "resourceName": "M365Gov-NativeAlert-RiskyIdentity",
+                  "displayName": "M365 Governance - Native Alert and Risky Identity Correlation",
+                  "version": "0.1.0",
+                  "source": "src/analytics/M365Gov-NativeAlert-RiskyIdentity.kql",
+                  "metadata": "src/analytics/M365Gov-NativeAlert-RiskyIdentity.metadata.json",
+                  "sha256": "bc7c8b617472a6a732da8b1ce7b2b6d87e86c79545819644f48e50ba19acec3c",
+                  "controlOwner": "Microsoft Entra ID Protection",
+                  "description": "Matching requires a native alert CompromisedEntity equal to ASIM ActorUsername. Different identity formats or missing entities prevent correlation. AI activity or usage volume is never promoted to identity risk.",
+                  "enabledByDefault": false,
+                  "severity": "Medium",
+                  "query": "let correlationWindow = 6h;\r\nlet nativeRiskAlerts =\r\n    M365Gov_NativeAlerts(ago(1d), now())\r\n    | where ProductName has_any (\"Entra\", \"Identity Protection\")\r\n        or ProviderName has_any (\"Entra\", \"Identity Protection\")\r\n        or AlertName has_any (\"risky user\", \"risky sign-in\", \"identity risk\")\r\n    | where isnotempty(ActorIdentifier)\r\n    | project\r\n        RiskAlertTime=TimeGenerated,\r\n        RiskAlertId=NativeRecordId,\r\n        RiskAlertName=AlertName,\r\n        RiskAlertSeverity=AlertSeverity,\r\n        ActorIdentifier,\r\n        ProductName,\r\n        ProviderName,\r\n        NativePortalRoute;\r\nlet aiActivity =\r\n    M365Gov_AiActivity(ago(1d), now())\r\n    | where isnotempty(ActorUsername)\r\n    | project\r\n        AiActivityTime=TimeGenerated,\r\n        ActorUsername,\r\n        SrcAgentName,\r\n        TargetAgentName,\r\n        ActingAppName,\r\n        AiEventType=EventType,\r\n        AiEventUid=EventUid;\r\nnativeRiskAlerts\r\n| join kind=innerunique aiActivity on $left.ActorIdentifier == $right.ActorUsername\r\n| where AiActivityTime between (RiskAlertTime - correlationWindow .. RiskAlertTime + correlationWindow)\r\n| extend\r\n    AlertTitle = \"Native identity-risk alert correlated with AI activity\",\r\n    AlertDescription = strcat(\"A native Microsoft Entra identity-risk alert was observed near normalized AI activity. Validate and remediate identity risk in Microsoft Entra; use Sentinel only for correlation.\"),\r\n    AccountCustomEntity = ActorUsername\r\n| project\r\n    TimeGenerated=max_of(RiskAlertTime, AiActivityTime),\r\n    AlertTitle,\r\n    AlertDescription,\r\n    RiskAlertId,\r\n    RiskAlertName,\r\n    RiskAlertSeverity,\r\n    ProductName,\r\n    ProviderName,\r\n    ActorUsername,\r\n    SrcAgentName,\r\n    TargetAgentName,\r\n    ActingAppName,\r\n    AiEventType,\r\n    AiEventUid,\r\n    NativePortalRoute,\r\n    AccountCustomEntity",
+                  "queryFrequency": "PT15M",
+                  "queryPeriod": "P1D",
+                  "triggerOperator": "GreaterThan",
+                  "triggerThreshold": 0,
+                  "suppressionDuration": "PT1H",
+                  "suppressionEnabled": false,
+                  "eventGroupingAggregationKind": "SingleAlert",
+                  "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                      "enabled": false,
+                      "reopenClosedIncident": false,
+                      "lookbackDuration": "PT1H",
+                      "matchingMethod": "AllEntities",
+                      "groupByEntities": [],
+                      "groupByAlertDetails": [],
+                      "groupByCustomDetails": []
+                    }
+                  },
+                  "entityMappings": [
+                    {
+                      "entityType": "Account",
+                      "fieldMappings": [
+                        {
+                          "identifier": "Name",
+                          "columnName": "AccountCustomEntity"
+                        }
+                      ]
+                    }
+                  ],
+                  "alertDetailsOverride": {},
+                  "customDetails": {},
+                  "tactics": [],
+                  "techniques": []
+                }
+              ],
+              "workbooks": [
+                {
+                  "id": "m365gov-coverage-and-gaps",
+                  "resourceName": "m365gov-coverage-and-gaps",
+                  "displayName": "M365 Governance Coverage and Gaps",
+                  "version": "0.1.0",
+                  "source": "src/workbooks/m365gov-coverage-and-gaps.workbook.json",
+                  "metadata": "src/workbooks/m365gov-coverage-and-gaps.metadata.json",
+                  "sha256": "99a1a49474ee64c17923ff9eeaf3e6ce31c6be17af15c722c800110571d36c1a",
+                  "controlOwner": "Multiple Microsoft native control planes",
+                  "description": "Sentinel visibility is not equivalent to tenant licensing, policy deployment, or native control effectiveness. Preview and optional sources can change independently of this workbook.",
+                  "serializedData": "{\"version\":\"Notebook/1.0\",\"items\":[{\"type\":1,\"content\":{\"json\":\"# Coverage and Gaps\\n\\nThis view distinguishes required MVP sources from optional or preview coverage. Native services remain authoritative even when their telemetry is unavailable in Sentinel. Optional custom interaction and usage integrations are not part of the default MVP.\"},\"name\":\"coverageNotice\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"M365Gov_DataHealth(24h)\\n| extend CoverageClass=iff(RequiredForMvp, \\\"MVP\\\", \\\"Optional or conditional\\\")\\n| summarize Sources=count(), Healthy=countif(Status == \\\"Healthy\\\"), Gaps=countif(Status != \\\"Healthy\\\") by CoverageClass\",\"size\":1,\"title\":\"MVP and optional coverage\",\"timeContext\":{\"durationMs\":86400000},\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"barchart\"},\"name\":\"coverageSummary\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"M365Gov_DataHealth(24h)\\n| where Status != \\\"Healthy\\\"\\n| extend CoverageClass=iff(RequiredForMvp, \\\"MVP\\\", \\\"Optional or conditional\\\")\\n| project CoverageClass, TableName, Status, LastEventTime, ExpectedFreshness, AuthoritativeControlOwner, NativePortalRoute\\n| order by CoverageClass asc, TableName asc\",\"size\":0,\"title\":\"Documented gaps and native owners\",\"timeContext\":{\"durationMs\":86400000},\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"table\"},\"name\":\"gapDetails\"}],\"isLocked\":false,\"fallbackResourceIds\":[\"Azure Monitor\"]}"
+                },
+                {
+                  "id": "m365gov-data-health",
+                  "resourceName": "m365gov-data-health",
+                  "displayName": "M365 Governance Data Health",
+                  "version": "0.1.0",
+                  "source": "src/workbooks/m365gov-data-health.workbook.json",
+                  "metadata": "src/workbooks/m365gov-data-health.metadata.json",
+                  "sha256": "8ccc3646b09abbec45d6fc64097915b4b69324c34d9cb0d519645d0b21754c6f",
+                  "controlOwner": "Microsoft Sentinel operations for ingestion health; source products own telemetry",
+                  "description": "Silence does not distinguish an absent table from a legitimately quiet source without operator validation. Fresh ingestion does not prove semantic completeness.",
+                  "serializedData": "{\"version\":\"Notebook/1.0\",\"items\":[{\"type\":1,\"content\":{\"json\":\"# Governance Data Health\\n\\nThis workbook reports ingestion freshness and silence. `UnavailableOrSilent` can mean absent, unlicensed, unauthorized, disabled, or simply no events. Validate each source in its native portal and connector configuration.\"},\"name\":\"healthNotice\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"M365Gov_DataHealth(24h)\\n| summarize Count=count() by Status\",\"size\":1,\"title\":\"Source status\",\"timeContext\":{\"durationMs\":86400000},\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"piechart\"},\"name\":\"healthStatus\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"M365Gov_DataHealth(24h)\\n| project TableName, Status, LastEventTime, Age, EventCount, ExpectedFreshness, RequiredForMvp, AuthoritativeControlOwner, NativePortalRoute\\n| order by RequiredForMvp desc, Status asc, TableName asc\",\"size\":0,\"title\":\"Freshness and remediation routing\",\"timeContext\":{\"durationMs\":86400000},\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"table\"},\"name\":\"healthDetails\"}],\"isLocked\":false,\"fallbackResourceIds\":[\"Azure Monitor\"]}"
+                },
+                {
+                  "id": "m365gov-governance-overview",
+                  "resourceName": "m365gov-governance-overview",
+                  "displayName": "M365 Copilot Governance Overview",
+                  "version": "0.1.0",
+                  "source": "src/workbooks/m365gov-governance-overview.workbook.json",
+                  "metadata": "src/workbooks/m365gov-governance-overview.metadata.json",
+                  "sha256": "d6dfce719778932acc5ddce4ea8159cf993229758f774346ebb2d8b253e42942",
+                  "controlOwner": "Multiple Microsoft native control planes",
+                  "description": "Coverage is based on Sentinel-visible sources and does not represent every licensed or configured native control. No prompt, response, or interaction content is displayed.",
+                  "serializedData": "{\"version\":\"Notebook/1.0\",\"items\":[{\"type\":1,\"content\":{\"json\":\"# Microsoft 365 Copilot Governance Overview\\n\\nMicrosoft Sentinel provides correlation, visualization, investigation routing, and operational health. Microsoft Purview, Defender, Entra, Microsoft 365 reporting, and Global Secure Access remain authoritative. Missing Sentinel data does not mean that no risk or compliance activity exists.\"},\"name\":\"governanceNotice\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"M365Gov_DataHealth(24h)\\n| summarize Sources=count(), Healthy=countif(Status == \\\"Healthy\\\"), Stale=countif(Status == \\\"Stale\\\"), UnavailableOrSilent=countif(Status == \\\"UnavailableOrSilent\\\")\",\"size\":1,\"title\":\"Native source coverage and health\",\"timeContext\":{\"durationMs\":86400000},\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"tiles\"},\"name\":\"sourceSummary\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"M365Gov_DataHealth(24h)\\n| project TableName, Status, LastEventTime, ExpectedFreshness, AuthoritativeControlOwner, NativePortalRoute, RequiredForMvp\\n| order by RequiredForMvp desc, Status asc, TableName asc\",\"size\":0,\"title\":\"Control ownership and native routing\",\"timeContext\":{\"durationMs\":86400000},\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"table\"},\"name\":\"ownershipTable\"}],\"isLocked\":false,\"fallbackResourceIds\":[\"Azure Monitor\"]}"
+                },
+                {
+                  "id": "m365gov-native-alert-correlation",
+                  "resourceName": "m365gov-native-alert-correlation",
+                  "displayName": "M365 Governance Native Alert Correlation",
+                  "version": "0.1.0",
+                  "source": "src/workbooks/m365gov-native-alert-correlation.workbook.json",
+                  "metadata": "src/workbooks/m365gov-native-alert-correlation.metadata.json",
+                  "sha256": "dec006417810a16e1c978d3bf1bddd327299eceb8e9e87e64cbcc97832dbebea",
+                  "controlOwner": "Originating Microsoft native alert providers",
+                  "description": "Entity correlation is available only when native alerts provide CompromisedEntity. A shared entity value does not prove a common root cause.",
+                  "serializedData": "{\"version\":\"Notebook/1.0\",\"items\":[{\"type\":1,\"content\":{\"json\":\"# Native Alert Correlation\\n\\nThis workbook displays existing native alerts and cross-product context. Resolve detections in the authoritative Microsoft portal. Sentinel does not reproduce Purview, Defender, or Entra detection logic.\\n\\n> **Identity privacy:** Raw actor identifiers are sensitive. Limit access to personnel with a need to know, and use masked or pseudonymized reporting views when direct identity is not necessary.\"},\"name\":\"correlationNotice\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"M365Gov_NativeAlerts(ago(24h), now())\\n| summarize AlertCount=count(), Products=dcount(ProductName), Providers=dcount(ProviderName) by ActorIdentifier\\n| where isnotempty(ActorIdentifier)\\n| order by AlertCount desc\",\"size\":0,\"title\":\"Entities represented by native alerts\",\"timeContext\":{\"durationMs\":86400000},\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"table\"},\"name\":\"entityCorrelation\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"M365Gov_NativeAlerts(ago(24h), now())\\n| project TimeGenerated, AlertName, AlertSeverity, AlertStatus, ActorIdentifier, ProductName, ProviderName, AuthoritativeControlOwner, NativePortalRoute\\n| order by TimeGenerated desc\",\"size\":0,\"title\":\"Native alert investigation routing\",\"timeContext\":{\"durationMs\":86400000},\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"table\"},\"name\":\"nativeAlertTable\"}],\"isLocked\":false,\"fallbackResourceIds\":[\"Azure Monitor\"]}"
+                }
+              ]
+            },
+            "contentManifest": "[variables('$fxv#0')]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2025-04-01",
+              "name": "m365-copilot-governance-functions",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "workspaceResourceId": {
+                    "value": "[parameters('workspaceResourceId')]"
+                  },
+                  "deployFunctions": {
+                    "value": "[parameters('deployFunctions')]"
+                  },
+                  "functions": {
+                    "value": "[variables('contentManifest').functions]"
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.44.1.10279",
+                      "templateHash": "2994971287742653438"
+                    }
+                  },
+                  "parameters": {
+                    "workspaceResourceId": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Resource ID of the target Log Analytics workspace."
+                      }
+                    },
+                    "deployFunctions": {
+                      "type": "bool",
+                      "defaultValue": true,
+                      "metadata": {
+                        "description": "Whether KQL functions should be deployed."
+                      }
+                    },
+                    "functions": {
+                      "type": "array",
+                      "defaultValue": [],
+                      "metadata": {
+                        "description": "KQL function definitions from generated/content-manifest.json."
+                      }
+                    }
+                  },
+                  "variables": {
+                    "copy": [
+                      {
+                        "name": "deployedFunctionResourceIds",
+                        "count": "[length(parameters('functions'))]",
+                        "input": "[resourceId('Microsoft.OperationalInsights/workspaces/savedSearches', last(split(parameters('workspaceResourceId'), '/')), parameters('functions')[copyIndex('deployedFunctionResourceIds')].resourceName)]"
+                      }
+                    ]
+                  },
+                  "resources": [
+                    {
+                      "copy": {
+                        "name": "savedSearches",
+                        "count": "[length(parameters('functions'))]"
+                      },
+                      "condition": "[parameters('deployFunctions')]",
+                      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+                      "apiVersion": "2020-08-01",
+                      "name": "[format('{0}/{1}', last(split(parameters('workspaceResourceId'), '/')), parameters('functions')[copyIndex()].resourceName)]",
+                      "properties": {
+                        "category": "[parameters('functions')[copyIndex()].category]",
+                        "displayName": "[parameters('functions')[copyIndex()].displayName]",
+                        "query": "[parameters('functions')[copyIndex()].query]",
+                        "functionAlias": "[parameters('functions')[copyIndex()].functionAlias]",
+                        "functionParameters": "[parameters('functions')[copyIndex()].functionParameters]",
+                        "version": "[parameters('functions')[copyIndex()].version]",
+                        "tags": [
+                          {
+                            "name": "Solution",
+                            "value": "M365 Copilot Governance"
+                          },
+                          {
+                            "name": "ControlOwner",
+                            "value": "[parameters('functions')[copyIndex()].controlOwner]"
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "outputs": {
+                    "functionResourceIds": {
+                      "type": "array",
+                      "value": "[if(parameters('deployFunctions'), variables('deployedFunctionResourceIds'), createArray())]"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2025-04-01",
+              "name": "m365-copilot-governance-analytics",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "workspaceResourceId": {
+                    "value": "[parameters('workspaceResourceId')]"
+                  },
+                  "deployAnalytics": {
+                    "value": "[parameters('deployAnalytics')]"
+                  },
+                  "analyticsEnabled": {
+                    "value": "[parameters('analyticsEnabled')]"
+                  },
+                  "analytics": {
+                    "value": "[variables('contentManifest').analytics]"
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.44.1.10279",
+                      "templateHash": "2155822813363905903"
+                    }
+                  },
+                  "parameters": {
+                    "workspaceResourceId": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Resource ID of the target Log Analytics workspace."
+                      }
+                    },
+                    "deployAnalytics": {
+                      "type": "bool",
+                      "defaultValue": true,
+                      "metadata": {
+                        "description": "Whether analytic rule resources should be deployed."
+                      }
+                    },
+                    "analyticsEnabled": {
+                      "type": "bool",
+                      "defaultValue": false,
+                      "metadata": {
+                        "description": "Whether deployed analytic rules should be enabled."
+                      }
+                    },
+                    "analytics": {
+                      "type": "array",
+                      "defaultValue": [],
+                      "metadata": {
+                        "description": "Analytic rule definitions from generated/content-manifest.json."
+                      }
+                    }
+                  },
+                  "variables": {
+                    "copy": [
+                      {
+                        "name": "deployedAnalyticRuleResourceIds",
+                        "count": "[length(parameters('analytics'))]",
+                        "input": "[extensionResourceId(resourceId('Microsoft.OperationalInsights/workspaces', last(split(parameters('workspaceResourceId'), '/'))), 'Microsoft.SecurityInsights/alertRules', guid(parameters('workspaceResourceId'), parameters('analytics')[copyIndex('deployedAnalyticRuleResourceIds')].resourceName))]"
+                      }
+                    ]
+                  },
+                  "resources": [
+                    {
+                      "copy": {
+                        "name": "analyticRules",
+                        "count": "[length(parameters('analytics'))]"
+                      },
+                      "condition": "[parameters('deployAnalytics')]",
+                      "type": "Microsoft.SecurityInsights/alertRules",
+                      "apiVersion": "2024-03-01",
+                      "scope": "[resourceId('Microsoft.OperationalInsights/workspaces', last(split(parameters('workspaceResourceId'), '/')))]",
+                      "name": "[guid(parameters('workspaceResourceId'), parameters('analytics')[copyIndex()].resourceName)]",
+                      "kind": "Scheduled",
+                      "properties": {
+                        "alertDetailsOverride": "[parameters('analytics')[copyIndex()].alertDetailsOverride]",
+                        "customDetails": "[parameters('analytics')[copyIndex()].customDetails]",
+                        "description": "[parameters('analytics')[copyIndex()].description]",
+                        "displayName": "[parameters('analytics')[copyIndex()].displayName]",
+                        "enabled": "[and(parameters('analyticsEnabled'), parameters('analytics')[copyIndex()].enabledByDefault)]",
+                        "entityMappings": "[parameters('analytics')[copyIndex()].entityMappings]",
+                        "eventGroupingSettings": {
+                          "aggregationKind": "[parameters('analytics')[copyIndex()].eventGroupingAggregationKind]"
+                        },
+                        "incidentConfiguration": "[parameters('analytics')[copyIndex()].incidentConfiguration]",
+                        "query": "[parameters('analytics')[copyIndex()].query]",
+                        "queryFrequency": "[parameters('analytics')[copyIndex()].queryFrequency]",
+                        "queryPeriod": "[parameters('analytics')[copyIndex()].queryPeriod]",
+                        "severity": "[parameters('analytics')[copyIndex()].severity]",
+                        "suppressionDuration": "[parameters('analytics')[copyIndex()].suppressionDuration]",
+                        "suppressionEnabled": "[parameters('analytics')[copyIndex()].suppressionEnabled]",
+                        "tactics": "[parameters('analytics')[copyIndex()].tactics]",
+                        "techniques": "[parameters('analytics')[copyIndex()].techniques]",
+                        "triggerOperator": "[parameters('analytics')[copyIndex()].triggerOperator]",
+                        "triggerThreshold": "[parameters('analytics')[copyIndex()].triggerThreshold]"
+                      }
+                    }
+                  ],
+                  "outputs": {
+                    "analyticRuleResourceIds": {
+                      "type": "array",
+                      "value": "[if(parameters('deployAnalytics'), variables('deployedAnalyticRuleResourceIds'), createArray())]"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2025-04-01",
+              "name": "m365-copilot-governance-workbooks",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "location": {
+                    "value": "[parameters('location')]"
+                  },
+                  "workspaceResourceId": {
+                    "value": "[parameters('workspaceResourceId')]"
+                  },
+                  "deployWorkbooks": {
+                    "value": "[parameters('deployWorkbooks')]"
+                  },
+                  "workbooks": {
+                    "value": "[variables('contentManifest').workbooks]"
+                  },
+                  "tags": {
+                    "value": "[parameters('tags')]"
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.44.1.10279",
+                      "templateHash": "8303354504092687448"
+                    }
+                  },
+                  "parameters": {
+                    "location": {
+                      "type": "string",
+                      "defaultValue": "[resourceGroup().location]",
+                      "metadata": {
+                        "description": "Azure region for workbook resources."
+                      }
+                    },
+                    "workspaceResourceId": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Resource ID of the target Log Analytics workspace."
+                      }
+                    },
+                    "deployWorkbooks": {
+                      "type": "bool",
+                      "defaultValue": true,
+                      "metadata": {
+                        "description": "Whether workbook resources should be deployed."
+                      }
+                    },
+                    "workbooks": {
+                      "type": "array",
+                      "defaultValue": [],
+                      "metadata": {
+                        "description": "Workbook definitions from generated/content-manifest.json."
+                      }
+                    },
+                    "tags": {
+                      "type": "object",
+                      "defaultValue": {},
+                      "metadata": {
+                        "description": "Resource tags applied to workbook resources."
+                      }
+                    }
+                  },
+                  "variables": {
+                    "copy": [
+                      {
+                        "name": "deployedWorkbookResourceIds",
+                        "count": "[length(parameters('workbooks'))]",
+                        "input": "[resourceId('Microsoft.Insights/workbooks', guid(parameters('workspaceResourceId'), parameters('workbooks')[copyIndex('deployedWorkbookResourceIds')].resourceName))]"
+                      }
+                    ]
+                  },
+                  "resources": [
+                    {
+                      "copy": {
+                        "name": "workbookResources",
+                        "count": "[length(parameters('workbooks'))]"
+                      },
+                      "condition": "[parameters('deployWorkbooks')]",
+                      "type": "Microsoft.Insights/workbooks",
+                      "apiVersion": "2023-06-01",
+                      "name": "[guid(parameters('workspaceResourceId'), parameters('workbooks')[copyIndex()].resourceName)]",
+                      "location": "[parameters('location')]",
+                      "kind": "shared",
+                      "tags": "[union(parameters('tags'), createObject('Solution', 'M365 Copilot Governance', 'SolutionResourceName', parameters('workbooks')[copyIndex()].resourceName, 'ControlOwner', parameters('workbooks')[copyIndex()].controlOwner))]",
+                      "properties": {
+                        "category": "sentinel",
+                        "description": "[parameters('workbooks')[copyIndex()].description]",
+                        "displayName": "[parameters('workbooks')[copyIndex()].displayName]",
+                        "serializedData": "[parameters('workbooks')[copyIndex()].serializedData]",
+                        "sourceId": "[parameters('workspaceResourceId')]",
+                        "version": "[parameters('workbooks')[copyIndex()].version]"
+                      }
+                    }
+                  ],
+                  "outputs": {
+                    "workbookResourceIds": {
+                      "type": "array",
+                      "value": "[if(parameters('deployWorkbooks'), variables('deployedWorkbookResourceIds'), createArray())]"
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "contentManifestVersion": {
+              "type": "string",
+              "value": "[variables('contentManifest').solutionVersion]"
+            },
+            "functionResourceIds": {
+              "type": "array",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'm365-copilot-governance-functions'), '2025-04-01').outputs.functionResourceIds.value]"
+            },
+            "analyticRuleResourceIds": {
+              "type": "array",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'm365-copilot-governance-analytics'), '2025-04-01').outputs.analyticRuleResourceIds.value]"
+            },
+            "workbookResourceIds": {
+              "type": "array",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'm365-copilot-governance-workbooks'), '2025-04-01').outputs.workbookResourceIds.value]"
+            },
+            "deployedResourceIds": {
+              "type": "array",
+              "value": "[concat(reference(resourceId('Microsoft.Resources/deployments', 'm365-copilot-governance-functions'), '2025-04-01').outputs.functionResourceIds.value, reference(resourceId('Microsoft.Resources/deployments', 'm365-copilot-governance-analytics'), '2025-04-01').outputs.analyticRuleResourceIds.value, reference(resourceId('Microsoft.Resources/deployments', 'm365-copilot-governance-workbooks'), '2025-04-01').outputs.workbookResourceIds.value)]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', format('{0}-workspace', parameters('resourceNamePrefix')))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "solutionVersion": {
+      "type": "string",
+      "value": "[parameters('solutionVersion')]"
+    },
+    "deploymentMode": {
+      "type": "string",
+      "value": "greenfield"
+    },
+    "workspaceResourceId": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', format('{0}-workspace', parameters('resourceNamePrefix'))), '2025-04-01').outputs.workspaceResourceId.value]"
+    },
+    "sentinelOnboardingStateResourceId": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', format('{0}-sentinel', parameters('resourceNamePrefix'))), '2025-04-01').outputs.sentinelOnboardingStateResourceId.value]"
+    },
+    "functionResourceIds": {
+      "type": "array",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', format('{0}-content', parameters('resourceNamePrefix'))), '2025-04-01').outputs.functionResourceIds.value]"
+    },
+    "analyticRuleResourceIds": {
+      "type": "array",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', format('{0}-content', parameters('resourceNamePrefix'))), '2025-04-01').outputs.analyticRuleResourceIds.value]"
+    },
+    "workbookResourceIds": {
+      "type": "array",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', format('{0}-content', parameters('resourceNamePrefix'))), '2025-04-01').outputs.workbookResourceIds.value]"
+    },
+    "deployedResourceIds": {
+      "type": "array",
+      "value": "[concat(createArray(reference(resourceId('Microsoft.Resources/deployments', format('{0}-workspace', parameters('resourceNamePrefix'))), '2025-04-01').outputs.workspaceResourceId.value, reference(resourceId('Microsoft.Resources/deployments', format('{0}-sentinel', parameters('resourceNamePrefix'))), '2025-04-01').outputs.sentinelOnboardingStateResourceId.value), reference(resourceId('Microsoft.Resources/deployments', format('{0}-content', parameters('resourceNamePrefix'))), '2025-04-01').outputs.deployedResourceIds.value)]"
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "AzureWorkbook",
+  "name": "m365gov-data-health",
+  "displayName": "M365 Governance Data Health",
+  "authoritativeControlOwner": {
+    "name": "Microsoft Sentinel operations for ingestion health; source products own telemetry",
+    "sentinelRole": "Freshness and silence visualization"
+  },
+  "nativePortalRoute": {
+    "label": "Microsoft Sentinel data connectors",
+    "uri": "https://portal.azure.com/#view/Microsoft_Azure_Security_Insights/WorkspaceSelectorBlade"
+  },
+  "dependencies": [
+    {
+      "type": "function",
+      "name": "M365Gov_DataHealth",
+      "required": true
+    }
+  ],
+  "freshness": {
+    "expected": "Per-table thresholds are evaluated over a 24-hour default window.",
+    "defaultLookback": "PT24H"
+  },
+  "limitations": [
+    "Silence does not distinguish an absent table from a legitimately quiet source without operator validation.",
+    "Fresh ingestion does not prove semantic completeness."
+  ],
+  "missingSourceBehavior": {
+    "mode": "show-status",
+    "description": "Expected sources remain listed as UnavailableOrSilent."
+  }
+}

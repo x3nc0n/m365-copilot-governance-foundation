@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "Function",
+  "name": "M365Gov_AuthenticationEvents",
+  "displayName": "M365 Governance Authentication Events",
+  "category": "M365 Copilot Governance",
+  "functionAlias": "M365Gov_AuthenticationEvents",
+  "functionParameters": "starttime:datetime = ago(14d), endtime:datetime = now()",
+  "authoritativeControlOwner": {
+    "name": "Microsoft Entra ID or the authentication source represented by ASIM",
+    "sentinelRole": "ASIM normalization and cross-source correlation"
+  },
+  "nativePortalRoute": {
+    "label": "Microsoft Entra sign-in logs",
+    "uri": "https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/SignIns"
+  },
+  "dependencies": [
+    {
+      "type": "function",
+      "name": "_Im_Authentication",
+      "required": true,
+      "owner": "Microsoft Sentinel ASIM"
+    },
+    {
+      "type": "parser",
+      "name": "ASIM authentication source parsers",
+      "required": true,
+      "owner": "Configured authentication connectors"
+    }
+  ],
+  "freshness": {
+    "expected": "Source and connector dependent; evaluate ingestion time separately from event time.",
+    "defaultLookback": "14d"
+  },
+  "limitations": [
+    "This function does not calculate or recreate identity risk.",
+    "Only fields normalized by the installed _Im_Authentication parser are returned.",
+    "Some sources omit user IDs, geolocation, application IDs, or result details."
+  ],
+  "missingSourceBehavior": {
+    "mode": "disabled",
+    "description": "Dependent content remains disabled when _Im_Authentication is absent. An empty result is not interpreted as no authentication activity."
+  },
+  "privacy": {
+    "promptOrResponseContent": "Not applicable.",
+    "identityHandling": "Normalized identity and network identifiers are returned only for correlation and native investigation routing."
+  }
+}

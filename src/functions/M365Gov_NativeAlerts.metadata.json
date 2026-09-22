@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "Function",
+  "name": "M365Gov_NativeAlerts",
+  "displayName": "M365 Governance Native Alerts",
+  "category": "M365 Copilot Governance",
+  "functionAlias": "M365Gov_NativeAlerts",
+  "functionParameters": "starttime:datetime = datetime(null), endtime:datetime = datetime(null)",
+  "authoritativeControlOwner": {
+    "name": "Originating Microsoft security or compliance product",
+    "sentinelRole": "Correlation and investigation routing only"
+  },
+  "nativePortalRoute": {
+    "label": "Microsoft Defender portal alerts",
+    "uri": "https://security.microsoft.com/alerts",
+    "notes": "SecurityIncident rows route to Microsoft Sentinel because incident URLs are workspace-specific."
+  },
+  "dependencies": [
+    {
+      "type": "table",
+      "name": "SecurityAlert",
+      "required": false,
+      "owner": "Microsoft Defender XDR and integrated native alert providers"
+    },
+    {
+      "type": "table",
+      "name": "SecurityIncident",
+      "required": false,
+      "owner": "Microsoft Sentinel"
+    }
+  ],
+  "freshness": {
+    "expected": "Connector-dependent; commonly minutes, but not guaranteed.",
+    "defaultLookback": "14d"
+  },
+  "limitations": [
+    "An absent alert does not mean an absent risk or compliance event.",
+    "SecurityIncident is an investigation container and does not transfer authoritative control ownership.",
+    "ActorIdentifier is populated only when a native alert supplies CompromisedEntity."
+  ],
+  "missingSourceBehavior": {
+    "mode": "partial",
+    "description": "The fuzzy union returns available sources. If neither table resolves, validation flags the function unavailable instead of treating the result as no risk."
+  },
+  "privacy": {
+    "promptOrResponseContent": "Not selected.",
+    "identityHandling": "Only the native compromised-entity identifier is exposed for correlation."
+  }
+}

@@ -1,0 +1,51 @@
+let correlationWindow = 6h;
+let nativeRiskAlerts =
+    M365Gov_NativeAlerts(ago(1d), now())
+    | where ProductName has_any ("Entra", "Identity Protection")
+        or ProviderName has_any ("Entra", "Identity Protection")
+        or AlertName has_any ("risky user", "risky sign-in", "identity risk")
+    | where isnotempty(ActorIdentifier)
+    | project
+        RiskAlertTime=TimeGenerated,
+        RiskAlertId=NativeRecordId,
+        RiskAlertName=AlertName,
+        RiskAlertSeverity=AlertSeverity,
+        ActorIdentifier,
+        ProductName,
+        ProviderName,
+        NativePortalRoute;
+let aiActivity =
+    M365Gov_AiActivity(ago(1d), now())
+    | where isnotempty(ActorUsername)
+    | project
+        AiActivityTime=TimeGenerated,
+        ActorUsername,
+        SrcAgentName,
+        TargetAgentName,
+        ActingAppName,
+        AiEventType=EventType,
+        AiEventUid=EventUid;
+nativeRiskAlerts
+| join kind=innerunique aiActivity on $left.ActorIdentifier == $right.ActorUsername
+| where AiActivityTime between (RiskAlertTime - correlationWindow .. RiskAlertTime + correlationWindow)
+| extend
+    AlertTitle = "Native identity-risk alert correlated with AI activity",
+    AlertDescription = strcat("A native Microsoft Entra identity-risk alert was observed near normalized AI activity. Validate and remediate identity risk in Microsoft Entra; use Sentinel only for correlation."),
+    AccountCustomEntity = ActorUsername
+| project
+    TimeGenerated=max_of(RiskAlertTime, AiActivityTime),
+    AlertTitle,
+    AlertDescription,
+    RiskAlertId,
+    RiskAlertName,
+    RiskAlertSeverity,
+    ProductName,
+    ProviderName,
+    ActorUsername,
+    SrcAgentName,
+    TargetAgentName,
+    ActingAppName,
+    AiEventType,
+    AiEventUid,
+    NativePortalRoute,
+    AccountCustomEntity

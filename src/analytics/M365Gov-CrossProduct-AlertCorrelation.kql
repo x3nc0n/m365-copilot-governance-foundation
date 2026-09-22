@@ -1,0 +1,44 @@
+let correlationWindow = 1h;
+let alerts =
+    M365Gov_NativeAlerts(ago(1d), now())
+    | where SourceTable == "SecurityAlert"
+    | where isnotempty(ActorIdentifier)
+    | project
+        TimeGenerated,
+        NativeRecordId,
+        AlertName,
+        AlertSeverity,
+        ProductName,
+        ProviderName,
+        AuthoritativeControlOwner,
+        ActorIdentifier,
+        NativePortalRoute;
+alerts
+| join kind=inner alerts on ActorIdentifier
+| where NativeRecordId < NativeRecordId1
+| where abs(datetime_diff("minute", TimeGenerated, TimeGenerated1)) <= toint(correlationWindow / 1m)
+| where ProductName != ProductName1 or ProviderName != ProviderName1
+| extend
+    AlertTitle = "Cross-product native alert correlation",
+    AlertDescription = "Two existing native alerts from different product or provider contexts reference the same compromised entity within one hour. Investigate in each authoritative native portal.",
+    AccountCustomEntity = ActorIdentifier
+| project
+    TimeGenerated=max_of(TimeGenerated, TimeGenerated1),
+    AlertTitle,
+    AlertDescription,
+    ActorIdentifier,
+    FirstAlertId=NativeRecordId,
+    FirstAlertName=AlertName,
+    FirstSeverity=AlertSeverity,
+    FirstProduct=ProductName,
+    FirstProvider=ProviderName,
+    FirstOwner=AuthoritativeControlOwner,
+    FirstPortal=NativePortalRoute,
+    SecondAlertId=NativeRecordId1,
+    SecondAlertName=AlertName1,
+    SecondSeverity=AlertSeverity1,
+    SecondProduct=ProductName1,
+    SecondProvider=ProviderName1,
+    SecondOwner=AuthoritativeControlOwner1,
+    SecondPortal=NativePortalRoute1,
+    AccountCustomEntity

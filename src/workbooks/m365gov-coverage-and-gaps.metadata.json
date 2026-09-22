@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "AzureWorkbook",
+  "name": "m365gov-coverage-and-gaps",
+  "displayName": "M365 Governance Coverage and Gaps",
+  "authoritativeControlOwner": {
+    "name": "Multiple Microsoft native control planes",
+    "sentinelRole": "Documents Sentinel-visible coverage and explicitly routes gaps"
+  },
+  "nativePortalRoute": {
+    "label": "Microsoft Sentinel",
+    "uri": "https://portal.azure.com/#view/Microsoft_Azure_Security_Insights/WorkspaceSelectorBlade"
+  },
+  "dependencies": [
+    {
+      "type": "function",
+      "name": "M365Gov_DataHealth",
+      "required": true
+    }
+  ],
+  "freshness": {
+    "expected": "Uses current data-health observations and versioned deployment metadata.",
+    "defaultLookback": "PT24H"
+  },
+  "limitations": [
+    "Sentinel visibility is not equivalent to tenant licensing, policy deployment, or native control effectiveness.",
+    "Preview and optional sources can change independently of this workbook."
+  ],
+  "missingSourceBehavior": {
+    "mode": "show-gap",
+    "description": "Unavailable sources remain documented coverage gaps with their native owner and route."
+  }
+}

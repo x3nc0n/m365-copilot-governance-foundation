@@ -1,0 +1,57 @@
+name: Offline build
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - dev
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Install PowerShell validation modules
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module Pester -MinimumVersion 5.6.1 -Scope CurrentUser -Force
+          Install-Module PSScriptAnalyzer -MinimumVersion 1.22.0 -Scope CurrentUser -Force
+
+      - name: Run ScriptAnalyzer
+        shell: pwsh
+        run: |
+          $results = @(
+            './powershell', './scripts', './build' |
+              ForEach-Object { Invoke-ScriptAnalyzer -Path $_ -Recurse -Settings ./PSScriptAnalyzerSettings.psd1 }
+          )
+          $results | Format-Table -AutoSize
+          if ($results) { throw "PSScriptAnalyzer reported $($results.Count) issue(s)." }
+
+      - name: Validate sample Bicep parameter files
+        shell: pwsh
+        run: |
+          az bicep install
+          az bicep build-params --file ./infra/greenfield/main.bicepparam --outfile "$env:RUNNER_TEMP/greenfield.parameters.json"
+          az bicep build-params --file ./infra/existing-workspace/main.bicepparam --outfile "$env:RUNNER_TEMP/existing-workspace.parameters.json"
+
+      - name: Run credential-free offline build
+        shell: pwsh
+        env:
+          AZURE_CONFIG_DIR: ${{ runner.temp }}/azure-config
+        run: ./build/Invoke-Build.ps1 -CI
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
+        with:
+          name: offline-test-results
+          path: build/test-results.xml
+          if-no-files-found: warn

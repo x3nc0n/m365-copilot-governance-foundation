@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "AzureWorkbook",
+  "name": "m365gov-native-alert-correlation",
+  "displayName": "M365 Governance Native Alert Correlation",
+  "authoritativeControlOwner": {
+    "name": "Originating Microsoft native alert providers",
+    "sentinelRole": "Correlation and native investigation routing"
+  },
+  "nativePortalRoute": {
+    "label": "Microsoft Defender portal alerts",
+    "uri": "https://security.microsoft.com/alerts"
+  },
+  "dependencies": [
+    {
+      "type": "function",
+      "name": "M365Gov_NativeAlerts",
+      "required": true
+    }
+  ],
+  "freshness": {
+    "expected": "Connector-dependent; the default display window is 24 hours.",
+    "defaultLookback": "PT24H"
+  },
+  "limitations": [
+    "Entity correlation is available only when native alerts provide CompromisedEntity.",
+    "A shared entity value does not prove a common root cause."
+  ],
+  "missingSourceBehavior": {
+    "mode": "empty-with-warning",
+    "description": "An empty visual must be interpreted with the data-health workbook and is not evidence of no alerts."
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "ScheduledAnalyticsRule",
+  "name": "M365Gov-NativeAlert-RiskyIdentity",
+  "displayName": "M365 Governance - Native Alert and Risky Identity Correlation",
+  "enabled": false,
+  "severity": "Medium",
+  "queryFrequency": "PT15M",
+  "queryPeriod": "P1D",
+  "triggerOperator": "GreaterThan",
+  "triggerThreshold": 0,
+  "authoritativeControlOwner": {
+    "name": "Microsoft Entra ID Protection",
+    "sentinelRole": "Correlates an existing native risk alert with normalized AI activity; it does not calculate identity risk."
+  },
+  "nativePortalRoute": {
+    "label": "Microsoft Entra risky users",
+    "uri": "https://entra.microsoft.com/#view/Microsoft_AAD_IAM/IdentityProtectionMenuBlade/~/RiskyUsers"
+  },
+  "dependencies": [
+    {
+      "type": "function",
+      "name": "M365Gov_NativeAlerts",
+      "required": true
+    },
+    {
+      "type": "function",
+      "name": "M365Gov_AiActivity",
+      "required": true
+    },
+    {
+      "type": "connector",
+      "name": "Microsoft Entra ID Protection native alert signal",
+      "required": true,
+      "owner": "Microsoft Entra ID Protection"
+    }
+  ],
+  "freshness": {
+    "expected": "Both inputs must be within their documented connector latency.",
+    "correlationWindow": "PT6H"
+  },
+  "limitations": [
+    "Matching requires a native alert CompromisedEntity equal to ASIM ActorUsername.",
+    "Different identity formats or missing entities prevent correlation.",
+    "AI activity or usage volume is never promoted to identity risk."
+  ],
+  "missingSourceBehavior": {
+    "mode": "no-incident-and-health-warning",
+    "description": "Keep disabled until both functions and a native Entra risk signal are validated; use data health to surface missing inputs."
+  },
+  "incidentConfiguration": {
+    "createIncident": true,
+    "grouping": "Group by RiskAlertId and ActorUsername for PT6H.",
+    "suppression": "PT1H"
+  },
+  "entityMappings": [
+    {
+      "entityType": "Account",
+      "field": "AccountCustomEntity"
+    }
+  ],
+  "severityRationale": "Medium adds cross-product context without overriding the native product severity.",
+  "falsePositiveGuidance": "Confirm the native risk alert is active and both identity fields represent the same account. Remediate in Microsoft Entra.",
+  "testQuery": "Run both dependencies over an approved test window and verify an existing Entra risk alert joins to test AI activity for the same normalized username.",
+  "privacy": {
+    "promptOrResponseContent": "Not queried.",
+    "usageAsMisconduct": "Prohibited."
+  }
+}

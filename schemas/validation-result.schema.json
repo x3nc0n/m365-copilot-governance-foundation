@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:m365-copilot-governance:validation-result:1.0.0",
+  "title": "M365 Copilot Governance Validation Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "command",
+    "status",
+    "exitCode",
+    "offline",
+    "checks",
+    "summary",
+    "redactionsApplied"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "command": { "type": "string", "minLength": 1 },
+    "status": { "enum": [ "pass", "warning", "fail", "skipped" ] },
+    "exitCode": { "type": "integer", "minimum": 0, "maximum": 3 },
+    "offline": { "type": "boolean" },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [ "name", "status", "evidence", "remediation" ],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "status": { "enum": [ "pass", "warning", "fail", "skipped" ] },
+          "evidence": { "type": "string" },
+          "remediation": { "type": "string" }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "passed", "warnings", "failed", "skipped" ],
+      "properties": {
+        "passed": { "type": "integer", "minimum": 0 },
+        "warnings": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 },
+        "skipped": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "redactionsApplied": { "type": "integer", "minimum": 0 }
+  }
+}

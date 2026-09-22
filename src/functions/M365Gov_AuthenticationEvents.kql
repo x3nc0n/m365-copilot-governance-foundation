@@ -1,0 +1,28 @@
+_Im_Authentication(starttime=starttime, endtime=endtime)
+| project
+    TimeGenerated,
+    EventStartTime,
+    EventEndTime,
+    IngestionTime = ingestion_time(),
+    EventUid,
+    EventType,
+    EventResult,
+    EventResultDetails,
+    EventOriginalResultDetails,
+    ActorUsername,
+    ActorUserId,
+    TargetUsername,
+    TargetUserId,
+    SrcIpAddr,
+    SrcGeoCountry,
+    TargetAppName,
+    TargetAppId,
+    LogonMethod,
+    EventProduct,
+    EventVendor,
+    EventSchema,
+    EventSchemaVersion
+| extend
+    GovernanceFunction = "M365Gov_AuthenticationEvents",
+    AuthoritativeControlOwner = "Microsoft Entra ID and the source authentication provider",
+    NativePortalRoute = "https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/SignIns"

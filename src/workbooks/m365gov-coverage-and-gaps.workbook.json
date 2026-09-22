@@ -1,0 +1,48 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": "# Coverage and Gaps\n\nThis view distinguishes required MVP sources from optional or preview coverage. Native services remain authoritative even when their telemetry is unavailable in Sentinel. Optional custom interaction and usage integrations are not part of the default MVP."
+      },
+      "name": "coverageNotice"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "M365Gov_DataHealth(24h)\n| extend CoverageClass=iff(RequiredForMvp, \"MVP\", \"Optional or conditional\")\n| summarize Sources=count(), Healthy=countif(Status == \"Healthy\"), Gaps=countif(Status != \"Healthy\") by CoverageClass",
+        "size": 1,
+        "title": "MVP and optional coverage",
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "barchart"
+      },
+      "name": "coverageSummary"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "M365Gov_DataHealth(24h)\n| where Status != \"Healthy\"\n| extend CoverageClass=iff(RequiredForMvp, \"MVP\", \"Optional or conditional\")\n| project CoverageClass, TableName, Status, LastEventTime, ExpectedFreshness, AuthoritativeControlOwner, NativePortalRoute\n| order by CoverageClass asc, TableName asc",
+        "size": 0,
+        "title": "Documented gaps and native owners",
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "table"
+      },
+      "name": "gapDetails"
+    }
+  ],
+  "isLocked": false,
+  "fallbackResourceIds": [
+    "Azure Monitor"
+  ]
+}

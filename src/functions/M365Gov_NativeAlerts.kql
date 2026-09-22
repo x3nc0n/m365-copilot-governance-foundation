@@ -1,0 +1,49 @@
+let alertLookback = iff(isnull(starttime), ago(14d), starttime);
+let alertEnd = iff(isnull(endtime), now(), endtime);
+union isfuzzy=true
+(
+    SecurityAlert
+    | where TimeGenerated between (alertLookback .. alertEnd)
+    | project
+        TimeGenerated,
+        IngestionTime = ingestion_time(),
+        SourceTable = "SecurityAlert",
+        NativeRecordId = tostring(SystemAlertId),
+        NativeIncidentNumber = "",
+        AlertName = tostring(AlertName),
+        AlertSeverity = tostring(AlertSeverity),
+        AlertStatus = tostring(AlertStatus),
+        ProductName = tostring(ProductName),
+        ProviderName = tostring(ProviderName),
+        AuthoritativeControlOwner = case(
+            ProductName has "Entra" or ProviderName has "Entra", "Microsoft Entra",
+            ProductName has "Purview" or ProviderName has "Purview", "Microsoft Purview",
+            ProductName has "Defender" or ProviderName has "Defender", "Microsoft Defender",
+            "Source product represented by the native alert"),
+        ActorIdentifier = tostring(CompromisedEntity),
+        TenantIdentifier = tostring(TenantId),
+        NativePortalRoute = "https://security.microsoft.com/alerts",
+        SourceDescription = tostring(Description)
+),
+(
+    SecurityIncident
+    | where TimeGenerated between (alertLookback .. alertEnd)
+    | project
+        TimeGenerated,
+        IngestionTime = ingestion_time(),
+        SourceTable = "SecurityIncident",
+        NativeRecordId = tostring(IncidentName),
+        NativeIncidentNumber = tostring(IncidentNumber),
+        AlertName = tostring(Title),
+        AlertSeverity = tostring(Severity),
+        AlertStatus = tostring(Status),
+        ProductName = "Microsoft Sentinel incident",
+        ProviderName = tostring(ProviderName),
+        AuthoritativeControlOwner = "Microsoft Sentinel (incident container); originating products retain control ownership",
+        ActorIdentifier = "",
+        TenantIdentifier = tostring(TenantId),
+        NativePortalRoute = "https://portal.azure.com/#view/Microsoft_Azure_Security_Insights/WorkspaceSelectorBlade",
+        SourceDescription = tostring(Description)
+)
+| where isnotempty(NativeRecordId)
+| extend GovernanceFunction = "M365Gov_NativeAlerts"

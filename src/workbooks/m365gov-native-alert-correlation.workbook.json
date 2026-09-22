@@ -1,0 +1,48 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": "# Native Alert Correlation\n\nThis workbook displays existing native alerts and cross-product context. Resolve detections in the authoritative Microsoft portal. Sentinel does not reproduce Purview, Defender, or Entra detection logic.\n\n> **Identity privacy:** Raw actor identifiers are sensitive. Limit access to personnel with a need to know, and use masked or pseudonymized reporting views when direct identity is not necessary."
+      },
+      "name": "correlationNotice"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "M365Gov_NativeAlerts(ago(24h), now())\n| summarize AlertCount=count(), Products=dcount(ProductName), Providers=dcount(ProviderName) by ActorIdentifier\n| where isnotempty(ActorIdentifier)\n| order by AlertCount desc",
+        "size": 0,
+        "title": "Entities represented by native alerts",
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "table"
+      },
+      "name": "entityCorrelation"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "M365Gov_NativeAlerts(ago(24h), now())\n| project TimeGenerated, AlertName, AlertSeverity, AlertStatus, ActorIdentifier, ProductName, ProviderName, AuthoritativeControlOwner, NativePortalRoute\n| order by TimeGenerated desc",
+        "size": 0,
+        "title": "Native alert investigation routing",
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "table"
+      },
+      "name": "nativeAlertTable"
+    }
+  ],
+  "isLocked": false,
+  "fallbackResourceIds": [
+    "Azure Monitor"
+  ]
+}

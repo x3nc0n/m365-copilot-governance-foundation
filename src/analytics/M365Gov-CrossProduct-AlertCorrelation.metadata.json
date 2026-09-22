@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "ScheduledAnalyticsRule",
+  "name": "M365Gov-CrossProduct-AlertCorrelation",
+  "displayName": "M365 Governance - Cross-Product Native Alert Correlation",
+  "enabled": false,
+  "severity": "Medium",
+  "queryFrequency": "PT15M",
+  "queryPeriod": "P1D",
+  "triggerOperator": "GreaterThan",
+  "triggerThreshold": 0,
+  "authoritativeControlOwner": {
+    "name": "Each originating Microsoft alert provider",
+    "sentinelRole": "Correlates existing alerts and routes investigation without replacing native detections."
+  },
+  "nativePortalRoute": {
+    "label": "Microsoft Defender portal alerts",
+    "uri": "https://security.microsoft.com/alerts"
+  },
+  "dependencies": [
+    {
+      "type": "function",
+      "name": "M365Gov_NativeAlerts",
+      "required": true
+    },
+    {
+      "type": "table",
+      "name": "SecurityAlert",
+      "required": true,
+      "owner": "Native Microsoft alert providers"
+    }
+  ],
+  "freshness": {
+    "expected": "Connector-dependent; both alerts must arrive within the one-day query period.",
+    "correlationWindow": "PT1H"
+  },
+  "limitations": [
+    "Correlation requires the same non-empty CompromisedEntity representation.",
+    "A shared entity does not prove a common root cause.",
+    "The rule does not reproduce native alert logic or inspect prompt content."
+  ],
+  "missingSourceBehavior": {
+    "mode": "no-incident-and-health-warning",
+    "description": "No incident is created with fewer than two distinct native product or provider alerts; source health is evaluated separately."
+  },
+  "incidentConfiguration": {
+    "createIncident": true,
+    "grouping": "Group by ActorIdentifier and the native alert IDs for PT6H.",
+    "suppression": "PT1H"
+  },
+  "entityMappings": [
+    {
+      "entityType": "Account",
+      "field": "AccountCustomEntity"
+    }
+  ],
+  "severityRationale": "Medium adds multi-product context without overriding either native severity.",
+  "falsePositiveGuidance": "Validate both alerts refer to the same identity or asset and resolve each detection in its authoritative product.",
+  "testQuery": "Use two approved test alerts from different native providers with the same CompromisedEntity and timestamps within one hour.",
+  "privacy": {
+    "promptOrResponseContent": "Not queried.",
+    "usageAsMisconduct": "Prohibited."
+  }
+}

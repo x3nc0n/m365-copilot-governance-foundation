@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "Function",
+  "name": "M365Gov_AiActivity",
+  "displayName": "M365 Governance AI Activity",
+  "category": "M365 Copilot Governance",
+  "functionAlias": "M365Gov_AiActivity",
+  "functionParameters": "starttime:datetime = ago(14d), endtime:datetime = now()",
+  "authoritativeControlOwner": {
+    "name": "The source AI platform and its native governance service",
+    "sentinelRole": "ASIM Agent Event normalization and correlation"
+  },
+  "nativePortalRoute": {
+    "label": "Microsoft Defender portal",
+    "uri": "https://security.microsoft.com/",
+    "notes": "Use the source-specific native route when the originating product provides one."
+  },
+  "dependencies": [
+    {
+      "type": "function",
+      "name": "_Im_AgentEvent",
+      "required": true,
+      "owner": "Microsoft Sentinel ASIM"
+    },
+    {
+      "type": "parser",
+      "name": "ASIM Agent Event source parser",
+      "required": true,
+      "owner": "Microsoft Sentinel or the source integration owner"
+    }
+  ],
+  "freshness": {
+    "expected": "Source parser and connector dependent.",
+    "defaultLookback": "14d"
+  },
+  "limitations": [
+    "ASIM Agent Event source-parser coverage can lag the current schema.",
+    "CopilotActivity is not force-mapped because its audit semantics do not guarantee every Agent Event meaning.",
+    "When no valid parser exists, use source-specific audit queries rather than fabricating ASIM fields.",
+    "Request, response, thought-process, token, LLMEventData, and network Content fields are excluded."
+  ],
+  "missingSourceBehavior": {
+    "mode": "disabled",
+    "description": "Dependent content stays disabled and reports the dependency unavailable. No result is never evidence that no AI activity occurred."
+  },
+  "privacy": {
+    "promptOrResponseContent": "Explicitly excluded.",
+    "identityHandling": "Only normalized identifiers needed for correlation are returned."
+  }
+}

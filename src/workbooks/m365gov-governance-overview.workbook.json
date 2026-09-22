@@ -1,0 +1,48 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": "# Microsoft 365 Copilot Governance Overview\n\nMicrosoft Sentinel provides correlation, visualization, investigation routing, and operational health. Microsoft Purview, Defender, Entra, Microsoft 365 reporting, and Global Secure Access remain authoritative. Missing Sentinel data does not mean that no risk or compliance activity exists."
+      },
+      "name": "governanceNotice"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "M365Gov_DataHealth(24h)\n| summarize Sources=count(), Healthy=countif(Status == \"Healthy\"), Stale=countif(Status == \"Stale\"), UnavailableOrSilent=countif(Status == \"UnavailableOrSilent\")",
+        "size": 1,
+        "title": "Native source coverage and health",
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "tiles"
+      },
+      "name": "sourceSummary"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "M365Gov_DataHealth(24h)\n| project TableName, Status, LastEventTime, ExpectedFreshness, AuthoritativeControlOwner, NativePortalRoute, RequiredForMvp\n| order by RequiredForMvp desc, Status asc, TableName asc",
+        "size": 0,
+        "title": "Control ownership and native routing",
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "table"
+      },
+      "name": "ownershipTable"
+    }
+  ],
+  "isLocked": false,
+  "fallbackResourceIds": [
+    "Azure Monitor"
+  ]
+}

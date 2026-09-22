@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:m365-copilot-governance:analytic-metadata:1.0.0",
+  "title": "M365 Copilot Governance Analytic Metadata",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "name",
+    "displayName",
+    "enabled",
+    "severity",
+    "queryFrequency",
+    "queryPeriod",
+    "triggerOperator",
+    "triggerThreshold",
+    "authoritativeControlOwner",
+    "nativePortalRoute",
+    "dependencies",
+    "freshness",
+    "limitations",
+    "missingSourceBehavior",
+    "incidentConfiguration",
+    "entityMappings",
+    "severityRationale",
+    "falsePositiveGuidance",
+    "testQuery",
+    "privacy"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "kind": { "const": "ScheduledAnalyticsRule" },
+    "name": { "$ref": "#/$defs/name" },
+    "displayName": { "$ref": "#/$defs/text" },
+    "enabled": { "const": false },
+    "severity": { "enum": [ "Informational", "Low", "Medium", "High" ] },
+    "queryFrequency": { "$ref": "#/$defs/duration" },
+    "queryPeriod": { "$ref": "#/$defs/duration" },
+    "triggerOperator": { "enum": [ "GreaterThan", "LessThan", "Equal", "NotEqual" ] },
+    "triggerThreshold": { "type": "integer", "minimum": 0 },
+    "authoritativeControlOwner": { "$ref": "#/$defs/controlOwner" },
+    "nativePortalRoute": { "$ref": "#/$defs/portalRoute" },
+    "dependencies": { "$ref": "#/$defs/dependencies" },
+    "freshness": { "$ref": "#/$defs/freshness" },
+    "limitations": { "$ref": "#/$defs/limitations" },
+    "missingSourceBehavior": { "$ref": "#/$defs/missingSourceBehavior" },
+    "incidentConfiguration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "createIncident", "grouping", "suppression" ],
+      "properties": {
+        "createIncident": { "type": "boolean" },
+        "grouping": { "$ref": "#/$defs/text" },
+        "suppression": { "$ref": "#/$defs/duration" }
+      }
+    },
+    "entityMappings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [ "entityType", "field" ],
+        "properties": {
+          "entityType": { "$ref": "#/$defs/text" },
+          "field": { "$ref": "#/$defs/text" }
+        }
+      }
+    },
+    "severityRationale": { "$ref": "#/$defs/text" },
+    "falsePositiveGuidance": { "$ref": "#/$defs/text" },
+    "testQuery": { "$ref": "#/$defs/text" },
+    "privacy": { "$ref": "#/$defs/privacy" }
+  },
+  "$defs": {
+    "text": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "pattern": "^[A-Za-z0-9_-]+$" },
+    "duration": { "type": "string", "pattern": "^P(?!$).+" },
+    "controlOwner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "name", "sentinelRole" ],
+      "properties": {
+        "name": { "$ref": "#/$defs/text" },
+        "sentinelRole": { "$ref": "#/$defs/text" }
+      }
+    },
+    "portalRoute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "label", "uri" ],
+      "properties": {
+        "label": { "$ref": "#/$defs/text" },
+        "uri": { "type": "string", "pattern": "^https://" },
+        "notes": { "$ref": "#/$defs/text" }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [ "type", "name", "required" ],
+        "properties": {
+          "type": { "enum": [ "function", "parser", "table", "connector" ] },
+          "name": { "$ref": "#/$defs/text" },
+          "required": { "type": "boolean" },
+          "owner": { "$ref": "#/$defs/text" }
+        }
+      }
+    },
+    "freshness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "expected" ],
+      "properties": {
+        "expected": { "$ref": "#/$defs/text" },
+        "defaultLookback": { "$ref": "#/$defs/text" },
+        "evaluationWindow": { "$ref": "#/$defs/text" },
+        "correlationWindow": { "$ref": "#/$defs/text" }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/text" },
+      "uniqueItems": true
+    },
+    "missingSourceBehavior": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "mode", "description" ],
+      "properties": {
+        "mode": { "$ref": "#/$defs/text" },
+        "description": { "$ref": "#/$defs/text" }
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "promptOrResponseContent", "usageAsMisconduct" ],
+      "properties": {
+        "promptOrResponseContent": { "$ref": "#/$defs/text" },
+        "identityHandling": { "$ref": "#/$defs/text" },
+        "usageAsMisconduct": { "$ref": "#/$defs/text" }
+      }
+    }
+  }
+}

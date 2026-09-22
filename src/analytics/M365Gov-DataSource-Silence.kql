@@ -1,0 +1,22 @@
+M365Gov_DataHealth(24h)
+| where RequiredForMvp
+| where Status in ("UnavailableOrSilent", "Stale")
+| extend
+    AlertTitle = strcat("M365 governance data source ", Status, ": ", TableName),
+    AlertDescription = strcat(
+        "The required native source is ", Status,
+        ". This is an operational-health signal, not evidence that no security, compliance, identity, or AI activity occurred. Validate the connector, licensing, permissions, and native portal."),
+    SourceCustomEntity = TableName
+| project
+    TimeGenerated=now(),
+    AlertTitle,
+    AlertDescription,
+    TableName,
+    Status,
+    LastEventTime,
+    Age,
+    ExpectedFreshness,
+    EventCount,
+    AuthoritativeControlOwner,
+    NativePortalRoute,
+    SourceCustomEntity

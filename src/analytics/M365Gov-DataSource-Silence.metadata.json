@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "ScheduledAnalyticsRule",
+  "name": "M365Gov-DataSource-Silence",
+  "displayName": "M365 Governance - Required Data Source Silence",
+  "enabled": false,
+  "severity": "Low",
+  "queryFrequency": "PT1H",
+  "queryPeriod": "P1D",
+  "triggerOperator": "GreaterThan",
+  "triggerThreshold": 0,
+  "authoritativeControlOwner": {
+    "name": "Microsoft Sentinel operations for connector health; source products own telemetry",
+    "sentinelRole": "Detects ingestion silence and stale data only."
+  },
+  "nativePortalRoute": {
+    "label": "Microsoft Sentinel data connectors",
+    "uri": "https://portal.azure.com/#view/Microsoft_Azure_Security_Insights/WorkspaceSelectorBlade"
+  },
+  "dependencies": [
+    {
+      "type": "function",
+      "name": "M365Gov_DataHealth",
+      "required": true
+    }
+  ],
+  "freshness": {
+    "expected": "Per-table thresholds from M365Gov_DataHealth.",
+    "evaluationWindow": "PT24H"
+  },
+  "limitations": [
+    "UnavailableOrSilent can mean absent, unauthorized, unlicensed, disabled, or no events.",
+    "A stale source may be normal for a quiet tenant.",
+    "This analytic reports health only and does not infer misconduct or risk."
+  ],
+  "missingSourceBehavior": {
+    "mode": "explicit-health-incident",
+    "description": "Missing required sources produce a low-severity operational incident with native remediation routing."
+  },
+  "incidentConfiguration": {
+    "createIncident": true,
+    "grouping": "Group by TableName for P1D.",
+    "suppression": "PT6H"
+  },
+  "entityMappings": [],
+  "severityRationale": "Low because source silence is an operational and coverage condition, not a security verdict.",
+  "falsePositiveGuidance": "Confirm event volume, licensing, permissions, connector state, table plan, and source latency before treating silence as a fault.",
+  "testQuery": "Evaluate a documented required source with no records in the 24-hour test window and verify it is labeled UnavailableOrSilent.",
+  "privacy": {
+    "promptOrResponseContent": "Not queried.",
+    "usageAsMisconduct": "Prohibited."
+  }
+}

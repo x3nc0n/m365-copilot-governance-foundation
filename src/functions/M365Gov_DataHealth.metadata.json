@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "Function",
+  "name": "M365Gov_DataHealth",
+  "displayName": "M365 Governance Data Health",
+  "category": "M365 Copilot Governance",
+  "functionAlias": "M365Gov_DataHealth",
+  "functionParameters": "lookback:timespan = 24h",
+  "authoritativeControlOwner": {
+    "name": "Each source product owns its telemetry; Microsoft Sentinel owns workspace ingestion health",
+    "sentinelRole": "Operational-health monitoring only"
+  },
+  "nativePortalRoute": {
+    "label": "Microsoft Sentinel data connectors",
+    "uri": "https://portal.azure.com/#view/Microsoft_Azure_Security_Insights/WorkspaceSelectorBlade"
+  },
+  "dependencies": [
+    {
+      "type": "connector",
+      "name": "Documented native source connectors",
+      "required": false,
+      "owner": "Multiple Microsoft control planes"
+    }
+  ],
+  "freshness": {
+    "expected": "Per-table thresholds are embedded in the expected-source catalog.",
+    "defaultLookback": "24h"
+  },
+  "limitations": [
+    "UnavailableOrSilent combines absence, lack of permission, connector disablement, and no events.",
+    "A quiet but correctly configured source can be reported as silent.",
+    "Freshness does not prove semantic completeness or licensing coverage."
+  ],
+  "missingSourceBehavior": {
+    "mode": "explicit-status",
+    "description": "Every expected source remains visible and is labeled UnavailableOrSilent when no observation is available."
+  },
+  "privacy": {
+    "promptOrResponseContent": "Not queried.",
+    "identityHandling": "No user-level fields are returned."
+  }
+}

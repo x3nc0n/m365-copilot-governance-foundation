@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "AzureWorkbook",
+  "name": "m365gov-governance-overview",
+  "displayName": "M365 Copilot Governance Overview",
+  "authoritativeControlOwner": {
+    "name": "Multiple Microsoft native control planes",
+    "sentinelRole": "Summary, correlation, and routing"
+  },
+  "nativePortalRoute": {
+    "label": "Microsoft Sentinel",
+    "uri": "https://portal.azure.com/#view/Microsoft_Azure_Security_Insights/WorkspaceSelectorBlade"
+  },
+  "dependencies": [
+    {
+      "type": "function",
+      "name": "M365Gov_DataHealth",
+      "required": true
+    }
+  ],
+  "freshness": {
+    "expected": "Uses the per-source thresholds in M365Gov_DataHealth.",
+    "defaultLookback": "PT24H"
+  },
+  "limitations": [
+    "Coverage is based on Sentinel-visible sources and does not represent every licensed or configured native control.",
+    "No prompt, response, or interaction content is displayed."
+  ],
+  "missingSourceBehavior": {
+    "mode": "show-status",
+    "description": "Missing and silent sources remain visible as UnavailableOrSilent and are never shown as healthy."
+  }
+}

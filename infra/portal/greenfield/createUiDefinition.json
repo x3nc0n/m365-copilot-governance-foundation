@@ -1,0 +1,122 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+  "handler": "Microsoft.Azure.CreateUIDef",
+  "version": "0.1.2-preview",
+  "parameters": {
+    "basics": [
+      {
+        "name": "location",
+        "type": "Microsoft.Common.Location",
+        "label": "Location",
+        "toolTip": "Azure region for the Log Analytics workspace and solution content.",
+        "resourceTypes": [
+          "Microsoft.OperationalInsights/workspaces"
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "name": "workspace",
+        "label": "Workspace",
+        "elements": [
+          {
+            "name": "workspaceName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Workspace name",
+            "defaultValue": "m365gov-law",
+            "toolTip": "Name of the new Log Analytics workspace.",
+            "constraints": {
+              "required": true,
+              "regex": "^[A-Za-z0-9][A-Za-z0-9-]{2,61}[A-Za-z0-9]$",
+              "validationMessage": "Use 4-63 letters, numbers, and hyphens, beginning and ending with a letter or number."
+            }
+          },
+          {
+            "name": "workspaceSku",
+            "type": "Microsoft.Common.DropDown",
+            "label": "Workspace SKU",
+            "defaultValue": "PerGB2018",
+            "toolTip": "Log Analytics pricing tier.",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Pay-as-you-go (PerGB2018)",
+                  "value": "PerGB2018"
+                }
+              ],
+              "required": true
+            }
+          },
+          {
+            "name": "workspaceRetentionInDays",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Retention in days",
+            "defaultValue": "30",
+            "toolTip": "Workspace retention from 30 through 730 days.",
+            "constraints": {
+              "required": true,
+              "regex": "^(3[0-9]|[4-9][0-9]|[1-6][0-9]{2}|7[0-2][0-9]|730)$",
+              "validationMessage": "Enter a whole number from 30 through 730."
+            }
+          }
+        ]
+      },
+      {
+        "name": "content",
+        "label": "Solution content",
+        "elements": [
+          {
+            "name": "resourceNamePrefix",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Resource name prefix",
+            "defaultValue": "m365gov",
+            "constraints": {
+              "required": true,
+              "regex": "^[A-Za-z0-9-]{1,32}$",
+              "validationMessage": "Use 1-32 letters, numbers, or hyphens."
+            }
+          },
+          {
+            "name": "deployFunctions",
+            "type": "Microsoft.Common.CheckBox",
+            "label": "Deploy KQL functions",
+            "defaultValue": true
+          },
+          {
+            "name": "deployAnalytics",
+            "type": "Microsoft.Common.CheckBox",
+            "label": "Deploy analytic rules",
+            "defaultValue": true
+          },
+          {
+            "name": "analyticsEnabled",
+            "type": "Microsoft.Common.CheckBox",
+            "label": "Enable analytic rules immediately",
+            "defaultValue": false,
+            "toolTip": "Leave disabled until source prerequisites and expected query behavior are validated."
+          },
+          {
+            "name": "deployWorkbooks",
+            "type": "Microsoft.Common.CheckBox",
+            "label": "Deploy workbooks",
+            "defaultValue": true
+          }
+        ]
+      }
+    ],
+    "outputs": {
+      "location": "[basics('location')]",
+      "solutionName": "m365CopilotGovernance",
+      "solutionVersion": "0.1.0",
+      "resourceNamePrefix": "[steps('content').resourceNamePrefix]",
+      "deployFunctions": "[steps('content').deployFunctions]",
+      "deployAnalytics": "[steps('content').deployAnalytics]",
+      "deployWorkbooks": "[steps('content').deployWorkbooks]",
+      "analyticsEnabled": "[steps('content').analyticsEnabled]",
+      "tags": {},
+      "workspaceName": "[steps('workspace').workspaceName]",
+      "workspaceSku": "[steps('workspace').workspaceSku]",
+      "workspaceRetentionInDays": "[int(steps('workspace').workspaceRetentionInDays)]"
+    }
+  }
+}

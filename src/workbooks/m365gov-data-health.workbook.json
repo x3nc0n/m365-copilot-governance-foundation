@@ -1,0 +1,48 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": "# Governance Data Health\n\nThis workbook reports ingestion freshness and silence. `UnavailableOrSilent` can mean absent, unlicensed, unauthorized, disabled, or simply no events. Validate each source in its native portal and connector configuration."
+      },
+      "name": "healthNotice"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "M365Gov_DataHealth(24h)\n| summarize Count=count() by Status",
+        "size": 1,
+        "title": "Source status",
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "piechart"
+      },
+      "name": "healthStatus"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "M365Gov_DataHealth(24h)\n| project TableName, Status, LastEventTime, Age, EventCount, ExpectedFreshness, RequiredForMvp, AuthoritativeControlOwner, NativePortalRoute\n| order by RequiredForMvp desc, Status asc, TableName asc",
+        "size": 0,
+        "title": "Freshness and remediation routing",
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "table"
+      },
+      "name": "healthDetails"
+    }
+  ],
+  "isLocked": false,
+  "fallbackResourceIds": [
+    "Azure Monitor"
+  ]
+}
