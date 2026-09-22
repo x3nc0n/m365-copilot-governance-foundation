@@ -27,9 +27,43 @@ az bicep build --file .\infra\greenfield\main.bicep
 az bicep build --file .\infra\existing-workspace\main.bicep
 ```
 
-## Release or portal deployment link returns 404
+## Portal deployment fails while the release asset downloads
 
-Immutable deployment URLs require three separate GitHub objects: the tag, the GitHub Release associated with that tag, and the named release asset. Diagnose them in that order; do not replace an immutable URL with a moving `main` or `dev` branch.
+Azure Portal fetches the template and `createUiDefinition` cross-origin. A GitHub Release asset can download successfully in a browser or PowerShell yet still fail in the portal if its final response lacks `Access-Control-Allow-Origin`. Do not use successful release download as proof that the portal transport is valid.
+
+The portal links must use the immutable raw tagged files under:
+
+```text
+https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.0/generated/release-assets/<asset>
+```
+
+Verify all four responses anonymously:
+
+```powershell
+$baseUri = 'https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.0/generated/release-assets'
+$assets = @(
+  'greenfield.json'
+  'greenfield.createUiDefinition.json'
+  'existing-workspace.json'
+  'existing-workspace.createUiDefinition.json'
+)
+
+foreach ($asset in $assets) {
+  $response = Invoke-WebRequest -Uri "$baseUri/$asset"
+  $allowOrigin = $response.Headers['Access-Control-Allow-Origin']
+  if ($allowOrigin -notcontains '*') {
+    throw "CORS verification failed for $asset. Header value: $allowOrigin"
+  }
+  $response.Content | ConvertFrom-Json -ErrorAction Stop | Out-Null
+  "Verified $asset"
+}
+```
+
+If the raw response returns `200` and valid JSON but the header is missing or is not `*`, the failure is a CORS transport problem. If the header is present, confirm that the complete portal link uses the exact URL-encoded raw template and `createUIDefinitionUri` values. See the [Microsoft Deploy to Azure button guidance](https://learn.microsoft.com/azure/azure-resource-manager/templates/deploy-to-azure-button).
+
+## Release asset returns 404
+
+Immutable release download URLs require three separate GitHub objects: the tag, the GitHub Release associated with that tag, and the named release asset. Diagnose them in that order; do not replace an immutable URL with a moving `main` or `dev` branch.
 
 ```powershell
 $Repository = 'x3nc0n/m365-copilot-governance-foundation'
@@ -47,7 +81,7 @@ gh release view $Tag `
 - If the first command returns `404`, the tag is missing or the repository/account cannot access it.
 - If the tag exists but `gh release view <tag>` reports that no release was found, the GitHub Release is missing.
 - If the release exists but the required filename is absent from `assets`, the release asset is missing or was published under a different name. Expected deployment filenames include `greenfield.json`, `existing-workspace.json`, their corresponding `*.createUiDefinition.json` files, `release-manifest.json`, and `checksums.sha256`.
-- If all three exist, confirm that the portal URL uses the exact tag and asset name, with correct URL encoding and no branch-based fallback.
+- If all three exist, verify the release checksum below. Separately verify the raw tagged portal URLs and CORS headers above.
 
 Test the public path without GitHub CLI credentials, then verify the downloaded asset against the release checksum:
 
