@@ -6,7 +6,8 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ### Changed
 
-- Release assets and validation evidence will be added before the first tag.
+- Published the `v0.1.0` GitHub Release with all required immutable deployment assets, restoring the Deploy to Azure URLs that returned 404 when only the git tag existed.
+- Documented automatic tag-release publication and anonymous JSON/checksum verification as release-completion gates.
 
 ## [0.1.0] - 2026-09-22
 

@@ -5,7 +5,7 @@
 
 A native-first, open-source reference implementation for adding Microsoft Sentinel correlation, visibility, investigation routing, and data-health monitoring to a Microsoft 365 Copilot governance program.
 
-> **MVP status:** Version 0.1.0 is a reference architecture. Review every parameter, permission, connector, rule, retention setting, and cost assumption before production use. The release assets referenced below may not exist until the `v0.1.0` tag is published.
+> **MVP status:** Version 0.1.0 is a reference architecture. Review every parameter, permission, connector, rule, retention setting, and cost assumption before production use. The `v0.1.0` GitHub Release includes the immutable deployment assets referenced below.
 
 ## Purpose
 
@@ -116,14 +116,14 @@ Confirm that only expected solution resources will change. See [Deployment](docs
 
 ### Deploy to Azure
 
-The buttons use immutable `v0.1.0` release-asset URLs in the final public repository. They are placeholders until the tag and assets are published; a 404 before release publication is expected.
+The buttons use immutable assets from the published `v0.1.0` GitHub Release. A git tag identifies source, but it does not create downloadable release assets: a `/releases/download/<tag>/<asset>` URL works only when a GitHub Release for that tag exists and contains the named asset.
 
 | Path | Template | Portal UI |
 |---|---|---|
 | Greenfield | [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fgithub.com%2Fx3nc0n%2Fm365-copilot-governance-foundation%2Freleases%2Fdownload%2Fv0.1.0%2Fgreenfield.json) | [Open custom deployment](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fgithub.com%2Fx3nc0n%2Fm365-copilot-governance-foundation%2Freleases%2Fdownload%2Fv0.1.0%2Fgreenfield.json/createUIDefinitionUri/https%3A%2F%2Fgithub.com%2Fx3nc0n%2Fm365-copilot-governance-foundation%2Freleases%2Fdownload%2Fv0.1.0%2Fgreenfield.createUiDefinition.json) |
 | Existing workspace | [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fgithub.com%2Fx3nc0n%2Fm365-copilot-governance-foundation%2Freleases%2Fdownload%2Fv0.1.0%2Fexisting-workspace.json) | [Open custom deployment](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fgithub.com%2Fx3nc0n%2Fm365-copilot-governance-foundation%2Freleases%2Fdownload%2Fv0.1.0%2Fexisting-workspace.json/createUIDefinitionUri/https%3A%2F%2Fgithub.com%2Fx3nc0n%2Fm365-copilot-governance-foundation%2Freleases%2Fdownload%2Fv0.1.0%2Fexisting-workspace.createUiDefinition.json) |
 
-Verify release checksums before deployment. Moving-branch URLs are intentionally unsupported.
+Before deployment, [anonymously download and verify every release asset](docs/release.md#verify-the-published-release), including JSON parsing and SHA-256 checks. Moving-branch URLs are intentionally unsupported.
 
 ## Validation and bootstrap workflow
 
