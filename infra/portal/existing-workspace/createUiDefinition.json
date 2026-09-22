@@ -3,31 +3,42 @@
   "handler": "Microsoft.Azure.CreateUIDef",
   "version": "0.1.2-preview",
   "parameters": {
-    "basics": [
-      {
-        "name": "location",
-        "type": "Microsoft.Common.Location",
-        "label": "Workbook location",
-        "toolTip": "Azure region used for regional content resources. The existing workspace is not modified.",
-        "resourceTypes": [
-          "Microsoft.Insights/workbooks"
-        ]
+    "config": {
+      "basics": {
+        "description": "Choose the subscription and resource group used to record this ARM deployment. Solution content is deployed to the selected workspace, which can be in a different resource group in the same subscription.",
+        "resourceGroup": {
+          "allowExisting": true
+        },
+        "location": {
+          "visible": false
+        }
       }
-    ],
+    },
+    "basics": [],
     "steps": [
       {
         "name": "workspace",
         "label": "Existing workspace",
         "elements": [
           {
-            "name": "workspaceResourceId",
-            "type": "Microsoft.Common.TextBox",
-            "label": "Workspace resource ID",
-            "toolTip": "Full resource ID of an existing Log Analytics workspace that is already onboarded to Microsoft Sentinel.",
-            "constraints": {
-              "required": true,
-              "regex": "^/subscriptions/[0-9a-fA-F-]{36}/resourceGroups/[^/]+/providers/Microsoft\\.OperationalInsights/workspaces/[^/]+$",
-              "validationMessage": "Enter a full Log Analytics workspace resource ID."
+            "name": "workspaceSelector",
+            "type": "Microsoft.Solutions.ResourceSelector",
+            "label": "Log Analytics workspace",
+            "resourceType": "Microsoft.OperationalInsights/workspaces",
+            "options": {
+              "filter": {
+                "subscription": "onBasics",
+                "location": "all"
+              }
+            }
+          },
+          {
+            "name": "sentinelRequirement",
+            "type": "Microsoft.Common.InfoBox",
+            "visible": true,
+            "options": {
+              "icon": "Warning",
+              "text": "The picker can filter by Azure resource type, subscription, and location, but it cannot detect Microsoft Sentinel onboarding. Confirm Sentinel is enabled on the selected workspace before deployment. The template performs an onboarding-state read and fails if the state is missing or unreadable."
             }
           }
         ]
@@ -36,17 +47,6 @@
         "name": "content",
         "label": "Solution content",
         "elements": [
-          {
-            "name": "resourceNamePrefix",
-            "type": "Microsoft.Common.TextBox",
-            "label": "Resource name prefix",
-            "defaultValue": "m365gov",
-            "constraints": {
-              "required": true,
-              "regex": "^[A-Za-z0-9-]{1,32}$",
-              "validationMessage": "Use 1-32 letters, numbers, or hyphens."
-            }
-          },
           {
             "name": "deployFunctions",
             "type": "Microsoft.Common.CheckBox",
@@ -62,9 +62,10 @@
           {
             "name": "analyticsEnabled",
             "type": "Microsoft.Common.CheckBox",
-            "label": "Enable analytic rules immediately",
+            "label": "Enable analytic rules immediately (not recommended)",
             "defaultValue": false,
-            "toolTip": "Leave disabled until source prerequisites and expected query behavior are validated."
+            "toolTip": "Leave disabled until source prerequisites, data availability, and expected query behavior are validated.",
+            "visible": "[steps('content').deployAnalytics]"
           },
           {
             "name": "deployWorkbooks",
@@ -76,16 +77,16 @@
       }
     ],
     "outputs": {
-      "location": "[basics('location')]",
+      "location": "[steps('workspace').workspaceSelector.location]",
       "solutionName": "m365CopilotGovernance",
-      "solutionVersion": "0.1.0",
-      "resourceNamePrefix": "[steps('content').resourceNamePrefix]",
+      "solutionVersion": "0.1.1",
+      "resourceNamePrefix": "m365gov",
       "deployFunctions": "[steps('content').deployFunctions]",
       "deployAnalytics": "[steps('content').deployAnalytics]",
       "deployWorkbooks": "[steps('content').deployWorkbooks]",
       "analyticsEnabled": "[steps('content').analyticsEnabled]",
       "tags": {},
-      "workspaceResourceId": "[steps('workspace').workspaceResourceId]"
+      "workspaceResourceId": "[steps('workspace').workspaceSelector.id]"
     }
   }
 }

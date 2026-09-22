@@ -9,7 +9,7 @@ param solutionName string = 'm365CopilotGovernance'
 
 @minLength(1)
 @description('Solution content version.')
-param solutionVersion string = '0.1.0'
+param solutionVersion string = '0.1.1'
 
 @minLength(1)
 @maxLength(32)
@@ -78,6 +78,7 @@ module content '../modules/content/main.bicep' = {
     deployAnalytics: deployAnalytics
     deployWorkbooks: deployWorkbooks
     analyticsEnabled: analyticsEnabled
+    sentinelCustomerManagedKey: sentinel.outputs.sentinelCustomerManagedKey
     tags: solutionTags
   }
 }

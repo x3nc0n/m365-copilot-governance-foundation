@@ -11,7 +11,7 @@ BeforeAll {
         'docs/deployment.md'
     )
     $script:Repository = 'x3nc0n/m365-copilot-governance-foundation'
-    $script:Tag = 'v0.1.0'
+    $script:Tag = 'v0.1.1'
     $script:RawBaseUri = "https://raw.githubusercontent.com/$($script:Repository)/$($script:Tag)/generated/release-assets"
     $script:ExpectedAssets = @{
         'greenfield' = @{
@@ -65,7 +65,7 @@ Describe 'Azure portal deployment documentation URLs' {
         }
     }
 
-    It 'uses only immutable raw v0.1.0 release assets in portal URL payloads' {
+    It 'uses only immutable raw v0.1.1 release assets in portal URL payloads' {
         $actualTemplates = [System.Collections.Generic.List[string]]::new()
         $actualUiDefinitions = [System.Collections.Generic.List[string]]::new()
 
@@ -103,6 +103,23 @@ Describe 'Azure portal deployment documentation URLs' {
             $script:ExpectedAssets['existing-workspace'].UiDefinition
             $script:ExpectedAssets['greenfield'].UiDefinition
         )
+    }
+
+    It 'opens the existing-workspace picker from every documented portal link' {
+        $existingTemplate = $script:ExpectedAssets['existing-workspace'].Template
+        $existingUiDefinition = $script:ExpectedAssets['existing-workspace'].UiDefinition
+        $existingPortalUrls = @(
+            $script:PortalUrls |
+                Where-Object {
+                    $decoded = [uri]::UnescapeDataString($_.Url)
+                    $decoded -match [regex]::Escape($existingTemplate)
+                }
+        )
+
+        $existingPortalUrls | Should -Not -BeNullOrEmpty
+        foreach ($portalUrl in $existingPortalUrls) {
+            [uri]::UnescapeDataString($portalUrl.Url) | Should -Match ([regex]::Escape("/createUIDefinitionUri/$existingUiDefinition"))
+        }
     }
 
     It 'keeps direct release downloads valid outside Azure portal links' {

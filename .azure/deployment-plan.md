@@ -1,9 +1,9 @@
 # Azure Deployment Plan
 
-> **Status:** Validated
-> **Current phase:** Offline artifact validation complete; live Azure validation is reserved for the user's manual deployment test
-> **Next status:** Deployment candidate after subscription-scoped `validate` and `what-if` complete successfully
-> **Approval:** The user explicitly authorized implementation through `/autopilot`; this plan is approved for execution without an additional approval round.
+> **Status:** Ready for Validation
+> **Current phase:** Issue #7 implementation and offline verification are complete; the previously validated v0.1.0 evidence remains historical and is superseded by this pending v0.1.1 change
+> **Next status:** Validated after CreateUiDefinition Sandbox, immutable-tag CORS, and authorized Azure `validate`/`what-if` checks complete
+> **Approval:** The user explicitly approved the issue #7 plan on September 22, 2026 and authorized end-to-end implementation without deploying Azure resources.
 
 **Generated:** 2026-09-22
 **Owner:** Trinity, Azure IaC Engineer
@@ -685,3 +685,169 @@ The azure-validate workflow independently verified the repository artifacts on S
 
 `Validated` in this plan means the checked-in deployment artifacts are internally consistent, reproducible, statically secure, and ready for a subscription-scoped manual validation. It does not claim that resources were deployed or that tenant connectors, licenses, consent, Azure Policy, or regional availability were validated in a customer environment.
 | Planning artifact | Confirm `.azure/deployment-plan.md` exists and contains the approved MVP contract | Passed | 2026-09-22 |
+
+---
+
+## 18. Approved-Change Candidate: Existing-Workspace Deploy to Azure UX
+
+### Planning status
+
+**Candidate status:** Ready for Validation on `squad/7-enhance-existing-workspace-ui`. No Azure resources were deployed, and no commits, pushes, pull requests, or release tags were created during this handoff.
+
+The screenshot reviewed on September 22, 2026 shows the generic ARM parameter blade. It duplicates the portal's deployment **Region** with the template's **Location** parameter, exposes fixed/internal values (`solutionName`, `solutionVersion`, `resourceNamePrefix`, and `tags`), and requires a manually pasted `workspaceResourceId`. The repository already contains a custom UI definition, but the primary existing-workspace **Deploy to Azure** button currently opens the template-only URL; only the adjacent custom-deployment link includes `createUIDefinitionUri`. The primary button therefore bypasses the authored UI and renders the generic form.
+
+### Proposed user experience
+
+1. The primary existing-workspace **Deploy to Azure** button opens the immutable ARM template together with its matching immutable `createUiDefinition`.
+2. The built-in **Basics** experience provides the subscription and existing resource-group picker. There is no standalone `Microsoft.Common.ResourceGroup` element in the documented CreateUiDefinition element set; resource group selection is a built-in Basics control configured through `parameters.config.basics.resourceGroup`.
+3. Hide the built-in Basics location control for this scenario. Do not add a second `Microsoft.Common.Location` control. The selected Log Analytics workspace's `location` becomes the ARM `location` output used for regional workbook resources.
+4. Replace the workspace resource-ID text box with `Microsoft.Solutions.ResourceSelector` for resource type `Microsoft.OperationalInsights/workspaces`.
+5. Restrict the selector to the subscription selected on Basics with `options.filter.subscription = "onBasics"` and use `options.filter.location = "all"` because the hidden Basics location must not suppress valid workspaces. The selector output supplies `id`, `name`, and `location`.
+6. Keep only meaningful choices visible:
+   - Deploy KQL functions
+   - Deploy analytic rules
+   - Enable analytic rules immediately, default `false`, with the existing prerequisite warning
+   - Deploy workbooks
+7. Keep fixed/internal parameters out of the form:
+   - `solutionName`: fixed output
+   - `solutionVersion`: release-controlled fixed output
+   - `resourceNamePrefix`: fixed output unless a future naming requirement proves it must be user-configurable
+   - `tags`: fixed empty object for this portal flow
+   - `workspaceResourceId`: derived from the selector
+   - `location`: derived from the selector
+8. Add concise explanatory text that the Basics resource group is the ARM deployment-history scope, while the solution content is deployed to the selected workspace's resource group. The workspace may therefore be in another resource group within the selected subscription.
+
+### Portal platform limitation and Sentinel validation
+
+`Microsoft.Solutions.ResourceSelector` can filter only by subscription and location. It cannot filter on arbitrary resource properties or on the existence of a child/extension resource. Therefore it cannot natively restrict the list to Log Analytics workspaces that contain `Microsoft.SecurityInsights/onboardingStates/default`.
+
+The implementation must not label the selector as “Sentinel-enabled workspaces only.” Instead:
+
+1. Label it **Log Analytics workspace** and state in the tooltip that Microsoft Sentinel must already be enabled.
+2. Prototype a dependent, nonvisual `Microsoft.Solutions.ArmApiControl` GET against:
+
+   ```text
+   {workspaceResourceId}/providers/Microsoft.SecurityInsights/onboardingStates/default?api-version=2025-09-01
+   ```
+
+   Use its result for an inline success/error or warning message only if the CreateUiDefinition Sandbox confirms stable behavior for success, 404/not-onboarded, insufficient permission, and cross-resource-group selection. `ArmApiControl` can issue ARM GET/POST calls and feed other controls, but the documented `ResourceSelector` schema has no arbitrary child-resource filter or custom validation contract.
+3. Preserve an authoritative fallback outside the selector:
+   - Add or strengthen an ARM/Bicep deployment-time existence check that deliberately reads the selected workspace's `onboardingStates/default` resource before solution content is deployed.
+   - Make a missing onboarding state fail early with a clear deployment error rather than relying on the current `existing` declaration's computed ID.
+   - Keep the documented/manual preflight (`Test-SentinelConnector.ps1`, `az rest`, or equivalent read-only validation) as the troubleshooting path when portal lookup is unavailable or the user lacks read permission.
+4. Distinguish these cases in user-facing guidance: no workspace selected, selected resource is not a Log Analytics workspace (prevented by the selector), Sentinel not onboarded, onboarding state unreadable because of RBAC, and later content-write authorization failure.
+
+### Source of truth and generated artifacts
+
+| Area | Source of truth | Planned treatment |
+|---|---|---|
+| Existing-workspace portal UI | `infra/portal/existing-workspace/createUiDefinition.json` | Implement Basics configuration, resource selector, location derivation, visible choices, guidance, and any sandbox-proven onboarding-state advisory |
+| Existing-workspace deployment contract | `infra/existing-workspace/main.bicep` | Preserve the public parameter names; add an explicit, testable Sentinel-onboarding existence gate if required for reliable enforcement |
+| Sample CLI parameters | `infra/existing-workspace/main.bicepparam` | Keep explicit `location` and `workspaceResourceId` because CLI/Bicep deployments do not use the portal selector; update version only as part of the release bump |
+| Compiled ARM | `infra/compiled/existing-workspace.json` | Regenerate from Bicep; never edit directly |
+| Release portal asset | `generated/release-assets/existing-workspace.createUiDefinition.json` | Regenerate by byte-copying the canonical portal source through `build/New-ReleaseManifest.ps1`; never edit directly |
+| Release ARM asset | `generated/release-assets/existing-workspace.json` | Regenerate from the compiled ARM source through the release build |
+| Release manifest/checksums | `generated/release-manifest.json`, `generated/checksums.sha256` | Regenerate after all source and version changes |
+| Deploy links | `README.md` and documented release/deployment guidance | Make the primary existing-workspace button include the matching encoded `createUIDefinitionUri`; retain immutable raw tagged URLs and CORS checks |
+
+### ARM parameter mapping
+
+The custom UI outputs must map every ARM parameter exactly:
+
+| ARM parameter | UI source |
+|---|---|
+| `location` | `[steps('workspace').workspaceSelector.location]` |
+| `workspaceResourceId` | `[steps('workspace').workspaceSelector.id]` |
+| `solutionName` | Fixed release value `m365CopilotGovernance` |
+| `solutionVersion` | Fixed value matching the new release version |
+| `resourceNamePrefix` | Fixed value `m365gov` |
+| `deployFunctions` | Visible content checkbox |
+| `deployAnalytics` | Visible content checkbox |
+| `deployWorkbooks` | Visible content checkbox |
+| `analyticsEnabled` | Visible content checkbox, default `false` |
+| `tags` | Fixed `{}` |
+
+Do not remove public Bicep parameters merely to hide them in the portal. CLI, PowerShell, and direct ARM consumers retain the existing parameter contract; CreateUiDefinition controls only what the portal asks the user to enter.
+
+### Implementation and validation plan
+
+1. Update `infra/portal/existing-workspace/createUiDefinition.json` as the canonical UI source.
+2. If portal-only validation cannot reliably block a non-Sentinel workspace, update `infra/existing-workspace/main.bicep` with the smallest explicit onboarding-state existence check and retain the same external parameter names.
+3. Strengthen `tests/portal/Portal.Tests.ps1` to assert:
+   - the existing-workspace definition uses `Microsoft.Solutions.ResourceSelector`;
+   - its `resourceType` is exactly `Microsoft.OperationalInsights/workspaces`;
+   - subscription filtering is `onBasics`;
+   - Basics location is hidden and no extra location element exists;
+   - `location` and `workspaceResourceId` map from selector properties;
+   - fixed/internal values are outputs, not editable controls;
+   - every UI output exactly matches an ARM parameter and no ARM parameter is omitted.
+4. Add negative/static assertions for a raw workspace-ID text box, duplicate location controls, unsupported ResourceSelector filters, and accidental exposure of fixed/internal parameters.
+5. If Bicep changes, extend ARM/Bicep tests to prove the onboarding state is actually dereferenced and that compiled/source artifacts remain aligned.
+6. Run the Microsoft ARM Template Toolkit validation recommended for CreateUiDefinition integration, in addition to the canonical repository build.
+7. Regenerate compiled ARM, flattened release assets, manifest, and checksums through the existing build scripts. Verify deterministic output and byte equality between portal source and packaged asset.
+8. Update `README.md`, `docs/deployment.md`, `docs/release.md`, `docs/troubleshooting.md`, and `CHANGELOG.md` to describe the picker UX, cross-resource-group behavior, Sentinel prerequisite, RBAC-versus-not-onboarded errors, and manual fallback.
+9. Publish as a new immutable patch release, expected `v0.1.1`; do not alter the existing `v0.1.0` tag or its raw assets. Update all release-controlled version values and version-pinned portal URLs consistently.
+10. Re-run the canonical offline build and all portal/release/CORS tests. The prior v0.1.0 evidence in section 17 remains historical baseline evidence and does not validate this candidate.
+
+### Manual Azure Portal validation
+
+Before marking the candidate validated or released:
+
+1. Load the canonical UI definition in the Microsoft CreateUiDefinition Sandbox.
+2. Verify subscription and existing resource-group selection render once.
+3. Verify no Region/Location control is shown and the ARM output location equals the selected workspace location.
+4. Verify the workspace selector shows only `Microsoft.OperationalInsights/workspaces` in the selected subscription, supports search by workspace/resource-group name, and returns the correct full resource ID.
+5. Test a Sentinel-enabled workspace, a Log Analytics workspace without Sentinel, and a workspace the tester cannot read fully. Confirm the UI message and authoritative deployment/preflight behavior are distinct and actionable.
+6. Verify all four combinations of the content checkboxes and confirm analytics remain disabled by default.
+7. Open the actual immutable `v0.1.1` Deploy to Azure link, not only the Sandbox, and confirm the primary button loads the custom picker experience rather than the generic parameter blade.
+8. Run resource-group deployment `validate` and `what-if` against the selected existing workspace. Do not run `create` without separate deployment authorization.
+9. Re-run live anonymous CORS/JSON checks for the tagged template and UI-definition URLs.
+10. Record screenshots, selected nonsecret test conditions, commands, results, and timestamps in this plan before restoring status to `Validated`.
+
+### Official Microsoft references
+
+- CreateUiDefinition overview and built-in Basics controls: https://learn.microsoft.com/en-us/azure/azure-resource-manager/managed-applications/create-uidefinition-overview
+- Supported CreateUiDefinition elements: https://learn.microsoft.com/en-us/azure/azure-resource-manager/managed-applications/create-uidefinition-elements
+- `Microsoft.Solutions.ResourceSelector`: https://learn.microsoft.com/en-us/azure/azure-resource-manager/managed-applications/microsoft-solutions-resourceselector
+- `Microsoft.Solutions.ArmApiControl`: https://learn.microsoft.com/en-us/azure/azure-resource-manager/managed-applications/microsoft-solutions-armapicontrol
+- CreateUiDefinition referencing functions and selector output mapping: https://learn.microsoft.com/en-us/azure/azure-resource-manager/managed-applications/create-ui-definition-referencing-functions
+- CreateUiDefinition Sandbox and ARM Template Toolkit validation: https://learn.microsoft.com/en-us/azure/azure-resource-manager/managed-applications/test-createuidefinition
+- Sentinel onboarding-state GET operation: https://learn.microsoft.com/en-us/rest/api/securityinsights/sentinel-onboarding-states/get
+- Sentinel onboarding-state list operation: https://learn.microsoft.com/en-us/rest/api/securityinsights/sentinel-onboarding-states/list
+- Deploy to Azure raw-template URL guidance: https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/deploy-to-azure-button
+
+### Implementation handoff — 2026-09-22
+
+Implemented:
+
+- Replaced the existing-workspace resource-ID text box with `Microsoft.Solutions.ResourceSelector` constrained to `Microsoft.OperationalInsights/workspaces`, the Basics subscription, and all workspace locations.
+- Configured the built-in Basics resource-group picker to allow existing groups and hid its location control; no custom location control remains.
+- Derived `workspaceResourceId` and `location` from the selected workspace and emitted fixed `solutionName`, `solutionVersion`, `resourceNamePrefix`, and `tags` values without editable controls.
+- Kept the four content toggles visible and logically ordered. `analyticsEnabled` defaults to `false` and is shown only when analytic-rule deployment is selected.
+- Recorded the official selector limitation in the UI and documentation: its supported filter surface is subscription and location only, so it cannot filter on `Microsoft.SecurityInsights/onboardingStates/default`.
+- Added an authoritative pre-content onboarding-state read by passing `sentinelOnboardingState.properties.customerManagedKey` into the nested content deployment. A missing or unreadable onboarding state prevents the content deployment from starting.
+- Updated the primary existing-workspace Deploy to Azure URL to include its matching `createUIDefinitionUri`.
+- Bumped release-controlled values and immutable URLs to the pending `v0.1.1` candidate and regenerated compiled templates, flattened release assets, manifests, and checksums from source.
+
+Offline verification:
+
+| Check | Result | Evidence |
+|---|---|---|
+| Canonical build | Passed | `pwsh -NoProfile -File .\build\Invoke-Build.ps1 -CI` |
+| Pester | Passed | 50 passed, 0 failed, 0 skipped |
+| JSON validation | Passed | 33 JSON files |
+| Bicep compilation and parameter compilation | Passed | Both scenario entry points and both `.bicepparam` files |
+| Bicep lint | Passed | `az bicep lint` for both scenario entry points |
+| Deterministic release packaging | Passed | Release generator rerun and source/package byte equality tests |
+| Diff whitespace validation | Passed | `git diff --check` |
+| ARM Template Toolkit | Not run | `Test-AzTemplate` / `arm-ttk` was not installed in the environment |
+
+Static role verification found no managed identities or `Microsoft.Authorization/roleAssignments` in this solution, so no application data-plane RBAC mapping applies. Deployment permissions remain an operator prerequisite documented for the selected workspace and Sentinel content resource types.
+
+Required reviewer re-validation passed on September 22, 2026. The targeted portal suite passed 7/7 tests, including recursive exclusion of `Microsoft.Common.ResourceGroup` and an exact `location,subscription` key set for `ResourceSelector.options.filter`. Independent parsing confirmed those properties in both the canonical source and byte-identical packaged UI definition. The canonical build then passed 50/50 tests, validated 33 JSON files, rebuilt both Bicep entry points and parameter files, and passed ARM/source drift and deterministic packaging checks. `git diff --check` also passed. Reviewer verdict: **APPROVE** for the offline artifact; the candidate remains **Ready for Validation** because the authenticated Sandbox, immutable-tag CORS, and authorized Azure `validate`/`what-if` gates remain outstanding.
+
+Remaining validation risk:
+
+- The CreateUiDefinition Sandbox requires an authenticated Azure portal session and was not exercised in this noninteractive handoff.
+- The pending raw `v0.1.1` URLs and live CORS behavior cannot be tested until the immutable tag is published.
+- Subscription-scoped Azure `validate` and `what-if` require an authorized test subscription and were intentionally not run; no Azure resources were deployed.

@@ -31,7 +31,7 @@ Describe 'JSON schemas' {
 
     It 'uses the exact content arrays and solution version' {
         $manifest = Get-Content -LiteralPath (Join-Path $script:RepositoryRoot 'generated/content-manifest.json') -Raw | ConvertFrom-Json -Depth 100
-        $manifest.solutionVersion | Should -Be '0.1.0'
+        $manifest.solutionVersion | Should -Be '0.1.1'
         $contentArrays = @($manifest.PSObject.Properties.Name | Where-Object { $_ -in @('functions', 'analytics', 'workbooks') })
         $contentArrays | Should -HaveCount 3
         $contentArrays | Should -Contain 'functions'

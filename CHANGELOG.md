@@ -6,6 +6,9 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ### Changed
 
+- Replaced the existing-workspace resource-ID textbox with a Log Analytics workspace picker, removed duplicate location and internal parameter inputs, derived workbook location from the selected workspace, and kept analytics disabled by default.
+- Added explicit guidance and a deployment-time onboarding-state read because `Microsoft.Solutions.ResourceSelector` cannot filter for Sentinel onboarding.
+- Updated the existing-workspace Deploy to Azure button to load its matching custom UI definition.
 - Published the `v0.1.0` GitHub Release with all required immutable deployment assets, restoring the Deploy to Azure URLs that returned 404 when only the git tag existed.
 - Documented automatic tag-release publication and anonymous JSON/checksum verification as release-completion gates.
 - Corrected Deploy to Azure links to use URL-encoded, immutable raw `v0.1.0` template and portal-definition URLs so Azure Portal receives the required CORS headers; retained GitHub Release assets for downloads, checksums, manifests, and provenance.
