@@ -15,7 +15,7 @@ Use Semantic Versioning. A breaking change includes incompatible parameter/outpu
 7. Generate compiled templates and copy the four upload-ready files to `generated/release-assets` using the exact flattened names below. Generate the release manifest and SHA-256 checksums from those packaged bytes.
 8. Confirm compiled artifacts exactly match tagged source.
 9. Push the `v<version>` tag so `.github/workflows/release.yml` can build, verify, and publish the GitHub Release assets automatically.
-10. Run the anonymous published-release verification below.
+10. Run the anonymous portal-header and published-release verifications below.
 11. Test README release links and Deploy to Azure flows.
 12. Record validation evidence; do not perform a live deployment without separate authorization.
 
@@ -41,6 +41,36 @@ https://github.com/x3nc0n/m365-copilot-governance-foundation/releases/download/v
 A git tag identifies a source revision, but it does not provide downloadable assets. A `/releases/download/<tag>/<asset>` URL requires both a GitHub Release associated with the tag and an uploaded asset with that exact name. The `v0.1.0` GitHub Release now contains all six assets listed above.
 
 `generated/release-manifest.json` and `generated/checksums.sha256` use these flattened upload names rather than source-tree paths. The two portal definitions are intentionally renamed during packaging so they cannot collide.
+
+## Verify the portal assets
+
+Azure Portal uses immutable raw tagged files rather than GitHub Release download responses. This follows the [Microsoft Deploy to Azure button guidance](https://learn.microsoft.com/azure/azure-resource-manager/templates/deploy-to-azure-button), which specifies a raw GitHub template URL and a URL-encoded portal route. Raw tagged responses provide `Access-Control-Allow-Origin: *`; the release assets remain the human-download, checksum, manifest, and provenance channel.
+
+Run this from PowerShell without GitHub authentication. It checks all four portal files, requires the CORS header, and parses each response as JSON.
+
+```powershell
+$tag = 'v0.1.0'
+$baseUri = "https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/$tag/generated/release-assets"
+$assets = @(
+  'greenfield.json'
+  'greenfield.createUiDefinition.json'
+  'existing-workspace.json'
+  'existing-workspace.createUiDefinition.json'
+)
+
+foreach ($asset in $assets) {
+  $response = Invoke-WebRequest -Uri "$baseUri/$asset"
+  $allowOrigin = $response.Headers['Access-Control-Allow-Origin']
+  if ($allowOrigin -notcontains '*') {
+    throw "$asset does not allow anonymous cross-origin retrieval. Header value: $allowOrigin"
+  }
+
+  $response.Content | ConvertFrom-Json -ErrorAction Stop | Out-Null
+  "Verified portal asset and CORS header: $asset"
+}
+```
+
+This verifies anonymous Azure Portal transport only. Continue with the release verification below to validate the published payload checksums and provenance.
 
 ## Automatic tag releases
 

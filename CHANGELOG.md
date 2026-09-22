@@ -8,6 +8,7 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 - Published the `v0.1.0` GitHub Release with all required immutable deployment assets, restoring the Deploy to Azure URLs that returned 404 when only the git tag existed.
 - Documented automatic tag-release publication and anonymous JSON/checksum verification as release-completion gates.
+- Corrected Deploy to Azure links to use URL-encoded, immutable raw `v0.1.0` template and portal-definition URLs so Azure Portal receives the required CORS headers; retained GitHub Release assets for downloads, checksums, manifests, and provenance.
 
 ## [0.1.0] - 2026-09-22
 
