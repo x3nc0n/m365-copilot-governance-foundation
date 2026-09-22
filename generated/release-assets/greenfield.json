@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.44.1.10279",
-      "templateHash": "10374701181958195633"
+      "templateHash": "16375500852883403903"
     }
   },
   "parameters": {
@@ -26,7 +26,7 @@
     },
     "solutionVersion": {
       "type": "string",
-      "defaultValue": "0.1.0",
+      "defaultValue": "0.1.1",
       "minLength": 1,
       "metadata": {
         "description": "Solution content version."
@@ -249,7 +249,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.44.1.10279",
-              "templateHash": "3553832288315237592"
+              "templateHash": "16491533597997186003"
             }
           },
           "parameters": {
@@ -275,6 +275,10 @@
             "sentinelOnboardingStateResourceId": {
               "type": "string",
               "value": "[extensionResourceId(resourceId('Microsoft.OperationalInsights/workspaces', last(split(parameters('workspaceResourceId'), '/'))), 'Microsoft.SecurityInsights/onboardingStates', 'default')]"
+            },
+            "sentinelCustomerManagedKey": {
+              "type": "bool",
+              "value": "[reference(extensionResourceId(resourceId('Microsoft.OperationalInsights/workspaces', last(split(parameters('workspaceResourceId'), '/'))), 'Microsoft.SecurityInsights/onboardingStates', 'default'), '2024-03-01').customerManagedKey]"
             }
           }
         }
@@ -311,6 +315,9 @@
           "analyticsEnabled": {
             "value": "[parameters('analyticsEnabled')]"
           },
+          "sentinelCustomerManagedKey": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('{0}-sentinel', parameters('resourceNamePrefix'))), '2025-04-01').outputs.sentinelCustomerManagedKey.value]"
+          },
           "tags": {
             "value": "[variables('solutionTags')]"
           }
@@ -322,7 +329,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.44.1.10279",
-              "templateHash": "4112678697848111986"
+              "templateHash": "3618308392203836831"
             }
           },
           "parameters": {
@@ -367,6 +374,12 @@
                 "description": "Whether deployed analytic rules should be enabled."
               }
             },
+            "sentinelCustomerManagedKey": {
+              "type": "bool",
+              "metadata": {
+                "description": "Sentinel onboarding-state value resolved before content deployment. This read fails when Sentinel is absent or unreadable."
+              }
+            },
             "tags": {
               "type": "object",
               "defaultValue": {},
@@ -378,13 +391,13 @@
           "variables": {
             "$fxv#0": {
               "schemaVersion": "1.0.0",
-              "solutionVersion": "0.1.0",
+              "solutionVersion": "0.1.1",
               "functions": [
                 {
                   "id": "M365Gov_AiActivity",
                   "resourceName": "M365Gov_AiActivity",
                   "displayName": "M365 Governance AI Activity",
-                  "version": "0.1.0",
+                  "version": "0.1.1",
                   "source": "src/functions/M365Gov_AiActivity.kql",
                   "metadata": "src/functions/M365Gov_AiActivity.metadata.json",
                   "sha256": "2f562426dbe216ff28914e33035aa9018bd6a0b985a22ca3cf713e7ad57c60ee",
@@ -398,7 +411,7 @@
                   "id": "M365Gov_AuthenticationEvents",
                   "resourceName": "M365Gov_AuthenticationEvents",
                   "displayName": "M365 Governance Authentication Events",
-                  "version": "0.1.0",
+                  "version": "0.1.1",
                   "source": "src/functions/M365Gov_AuthenticationEvents.kql",
                   "metadata": "src/functions/M365Gov_AuthenticationEvents.metadata.json",
                   "sha256": "1ecf17709d511228bf1dffe609120c0877d58595aa1a11133d36dd1ef7b411fb",
@@ -412,7 +425,7 @@
                   "id": "M365Gov_DataHealth",
                   "resourceName": "M365Gov_DataHealth",
                   "displayName": "M365 Governance Data Health",
-                  "version": "0.1.0",
+                  "version": "0.1.1",
                   "source": "src/functions/M365Gov_DataHealth.kql",
                   "metadata": "src/functions/M365Gov_DataHealth.metadata.json",
                   "sha256": "c18b5cda723283d07d3c69f76f6ededa1568151b433aabc03080935a09dd31d0",
@@ -426,7 +439,7 @@
                   "id": "M365Gov_NativeAlerts",
                   "resourceName": "M365Gov_NativeAlerts",
                   "displayName": "M365 Governance Native Alerts",
-                  "version": "0.1.0",
+                  "version": "0.1.1",
                   "source": "src/functions/M365Gov_NativeAlerts.kql",
                   "metadata": "src/functions/M365Gov_NativeAlerts.metadata.json",
                   "sha256": "5cb8afe7ff77780fe3c05877e565fb1d2c1453666c7e2da9c74dd6b77e5de86d",
@@ -442,7 +455,7 @@
                   "id": "M365Gov-CrossProduct-AlertCorrelation",
                   "resourceName": "M365Gov-CrossProduct-AlertCorrelation",
                   "displayName": "M365 Governance - Cross-Product Native Alert Correlation",
-                  "version": "0.1.0",
+                  "version": "0.1.1",
                   "source": "src/analytics/M365Gov-CrossProduct-AlertCorrelation.kql",
                   "metadata": "src/analytics/M365Gov-CrossProduct-AlertCorrelation.metadata.json",
                   "sha256": "bb32ec67639078397aeac5e4c398021a68f2b4b8554d1cd0aba1ab108c19849c",
@@ -490,7 +503,7 @@
                   "id": "M365Gov-DataSource-Silence",
                   "resourceName": "M365Gov-DataSource-Silence",
                   "displayName": "M365 Governance - Required Data Source Silence",
-                  "version": "0.1.0",
+                  "version": "0.1.1",
                   "source": "src/analytics/M365Gov-DataSource-Silence.kql",
                   "metadata": "src/analytics/M365Gov-DataSource-Silence.metadata.json",
                   "sha256": "b0d62b5eea67c279785acdde6556354aa100a399256b4f2e2fd4bb386889102b",
@@ -528,7 +541,7 @@
                   "id": "M365Gov-NativeAlert-RiskyIdentity",
                   "resourceName": "M365Gov-NativeAlert-RiskyIdentity",
                   "displayName": "M365 Governance - Native Alert and Risky Identity Correlation",
-                  "version": "0.1.0",
+                  "version": "0.1.1",
                   "source": "src/analytics/M365Gov-NativeAlert-RiskyIdentity.kql",
                   "metadata": "src/analytics/M365Gov-NativeAlert-RiskyIdentity.metadata.json",
                   "sha256": "bc7c8b617472a6a732da8b1ce7b2b6d87e86c79545819644f48e50ba19acec3c",
@@ -578,7 +591,7 @@
                   "id": "m365gov-coverage-and-gaps",
                   "resourceName": "m365gov-coverage-and-gaps",
                   "displayName": "M365 Governance Coverage and Gaps",
-                  "version": "0.1.0",
+                  "version": "0.1.1",
                   "source": "src/workbooks/m365gov-coverage-and-gaps.workbook.json",
                   "metadata": "src/workbooks/m365gov-coverage-and-gaps.metadata.json",
                   "sha256": "99a1a49474ee64c17923ff9eeaf3e6ce31c6be17af15c722c800110571d36c1a",
@@ -590,7 +603,7 @@
                   "id": "m365gov-data-health",
                   "resourceName": "m365gov-data-health",
                   "displayName": "M365 Governance Data Health",
-                  "version": "0.1.0",
+                  "version": "0.1.1",
                   "source": "src/workbooks/m365gov-data-health.workbook.json",
                   "metadata": "src/workbooks/m365gov-data-health.metadata.json",
                   "sha256": "8ccc3646b09abbec45d6fc64097915b4b69324c34d9cb0d519645d0b21754c6f",
@@ -602,7 +615,7 @@
                   "id": "m365gov-governance-overview",
                   "resourceName": "m365gov-governance-overview",
                   "displayName": "M365 Copilot Governance Overview",
-                  "version": "0.1.0",
+                  "version": "0.1.1",
                   "source": "src/workbooks/m365gov-governance-overview.workbook.json",
                   "metadata": "src/workbooks/m365gov-governance-overview.metadata.json",
                   "sha256": "d6dfce719778932acc5ddce4ea8159cf993229758f774346ebb2d8b253e42942",
@@ -614,7 +627,7 @@
                   "id": "m365gov-native-alert-correlation",
                   "resourceName": "m365gov-native-alert-correlation",
                   "displayName": "M365 Governance Native Alert Correlation",
-                  "version": "0.1.0",
+                  "version": "0.1.1",
                   "source": "src/workbooks/m365gov-native-alert-correlation.workbook.json",
                   "metadata": "src/workbooks/m365gov-native-alert-correlation.metadata.json",
                   "sha256": "dec006417810a16e1c978d3bf1bddd327299eceb8e9e87e64cbcc97832dbebea",
@@ -962,6 +975,10 @@
               "type": "string",
               "value": "[variables('contentManifest').solutionVersion]"
             },
+            "sentinelCustomerManagedKey": {
+              "type": "bool",
+              "value": "[parameters('sentinelCustomerManagedKey')]"
+            },
             "functionResourceIds": {
               "type": "array",
               "value": "[reference(resourceId('Microsoft.Resources/deployments', 'm365-copilot-governance-functions'), '2025-04-01').outputs.functionResourceIds.value]"
@@ -982,6 +999,7 @@
         }
       },
       "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', format('{0}-sentinel', parameters('resourceNamePrefix')))]",
         "[resourceId('Microsoft.Resources/deployments', format('{0}-workspace', parameters('resourceNamePrefix')))]"
       ]
     }

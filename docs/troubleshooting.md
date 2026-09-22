@@ -34,13 +34,13 @@ Azure Portal fetches the template and `createUiDefinition` cross-origin. A GitHu
 The portal links must use the immutable raw tagged files under:
 
 ```text
-https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.0/generated/release-assets/<asset>
+https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.1/generated/release-assets/<asset>
 ```
 
 Verify all four responses anonymously:
 
 ```powershell
-$baseUri = 'https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.0/generated/release-assets'
+$baseUri = 'https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.1/generated/release-assets'
 $assets = @(
   'greenfield.json'
   'greenfield.createUiDefinition.json'
@@ -67,7 +67,7 @@ Immutable release download URLs require three separate GitHub objects: the tag, 
 
 ```powershell
 $Repository = 'x3nc0n/m365-copilot-governance-foundation'
-$Tag = 'v0.1.0'
+$Tag = 'v0.1.1'
 
 # 1. Confirm that the Git tag exists.
 gh api "repos/$Repository/git/ref/tags/$Tag"
@@ -87,7 +87,7 @@ Test the public path without GitHub CLI credentials, then verify the downloaded 
 
 ```powershell
 $Repository = 'x3nc0n/m365-copilot-governance-foundation'
-$Tag = 'v0.1.0'
+$Tag = 'v0.1.1'
 $Asset = 'greenfield.json'
 $BaseUri = "https://github.com/$Repository/releases/download/$Tag"
 
@@ -115,6 +115,16 @@ if ($actual -ne $expected) {
 
 Stop. Do not deploy. Confirm the scenario, target resource ID, parameter file, and compiled template. Run `az deployment group what-if` again and compare changes with the solution-owned resource set. The existing-workspace path must not replace or delete unrelated content.
 
+## Existing workspace picker or Sentinel validation fails
+
+- **No workspace is listed:** confirm the selected subscription, `Microsoft.OperationalInsights` provider availability, and permission to read workspaces.
+- **The expected workspace is absent:** the picker lists Log Analytics workspaces in the Basics subscription, across all locations. Confirm the workspace is in that subscription and search by workspace or resource-group name.
+- **Sentinel is not enabled:** the resource selector cannot filter on Sentinel onboarding. Enable Sentinel on the workspace or select another workspace before deployment.
+- **Onboarding state is unreadable:** permission to list the workspace does not guarantee permission to read `Microsoft.SecurityInsights/onboardingStates/default`. Ask for the narrow required read access; do not broaden permissions blindly.
+- **Content write fails later:** Sentinel onboarding validation succeeded, but the deployment identity lacks one or more content write actions. Review the failed resource type and effective RBAC.
+
+The template's onboarding-state read intentionally distinguishes selection from readiness. Use `Test-SentinelConnector.ps1` or an authorized read-only `az rest` GET for the onboarding-state resource when portal feedback is insufficient.
+
 ## Connector or table missing
 
 Check the Neo-owned [data-table catalog](data-tables.md) for license, consent, setup, table, latency, and fallback. Then check:
@@ -133,7 +143,7 @@ Use `Test-GraphAccess.ps1` and compare required versus effective permissions. Au
 
 ## Bootstrap does not change anything
 
-This is expected in v0.1.0. Without `-Bootstrap`, the command returns a skipped result. With `-Bootstrap`, preview with `-WhatIf`; a confirmed run still creates no identity or consent and returns a warning that the MVP preserves the human-controlled handoff. A denied confirmation or missing approval also leaves the tenant unchanged.
+This is expected in v0.1.1. Without `-Bootstrap`, the command returns a skipped result. With `-Bootstrap`, preview with `-WhatIf`; a confirmed run still creates no identity or consent and returns a warning that the MVP preserves the human-controlled handoff. A denied confirmation or missing approval also leaves the tenant unchanged.
 
 ## Workbook is empty
 

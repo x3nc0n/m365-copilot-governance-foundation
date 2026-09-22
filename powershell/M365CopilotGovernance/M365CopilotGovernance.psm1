@@ -242,7 +242,7 @@ function Invoke-M365GovernanceValidation {
             try {
                 $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json -Depth 100
                 $arrayNames = @($manifest.PSObject.Properties.Name | Where-Object { $_ -in @('functions', 'analytics', 'workbooks') })
-                $validShape = $manifest.solutionVersion -eq '0.1.0' -and
+                $validShape = $manifest.solutionVersion -eq '0.1.1' -and
                     $arrayNames.Count -eq 3 -and
                     $null -ne $manifest.functions -and
                     $null -ne $manifest.analytics -and
