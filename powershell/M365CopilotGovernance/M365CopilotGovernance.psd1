@@ -1,6 +1,6 @@
 @{
     RootModule        = 'M365CopilotGovernance.psm1'
-    ModuleVersion     = '0.1.1'
+    ModuleVersion     = '0.1.2'
     GUID              = '7c6cdf87-2d3a-4da8-ae76-40ef49fe4ab8'
     Author            = 'M365 Copilot Governance Foundation contributors'
     CompanyName       = 'Community'

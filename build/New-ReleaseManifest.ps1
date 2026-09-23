@@ -17,10 +17,22 @@ if (-not (Test-Path -LiteralPath $contentManifestPath)) {
 
 $releaseAssetRoot = Join-Path $RepositoryRoot 'generated/release-assets'
 $releaseAssetSources = [ordered]@{
-    'greenfield.json'                           = 'infra/compiled/greenfield.json'
-    'greenfield.createUiDefinition.json'        = 'infra/portal/greenfield/createUiDefinition.json'
-    'existing-workspace.json'                   = 'infra/compiled/existing-workspace.json'
-    'existing-workspace.createUiDefinition.json' = 'infra/portal/existing-workspace/createUiDefinition.json'
+    'greenfield.json' = @{
+        Source = 'infra/compiled/greenfield.json'
+        NormalizeText = $false
+    }
+    'greenfield.createUiDefinition.json' = @{
+        Source = 'infra/portal/greenfield/createUiDefinition.json'
+        NormalizeText = $true
+    }
+    'existing-workspace.json' = @{
+        Source = 'infra/compiled/existing-workspace.json'
+        NormalizeText = $false
+    }
+    'existing-workspace.createUiDefinition.json' = @{
+        Source = 'infra/portal/existing-workspace/createUiDefinition.json'
+        NormalizeText = $true
+    }
 }
 
 if (Test-Path -LiteralPath $releaseAssetRoot) {
@@ -29,12 +41,22 @@ if (Test-Path -LiteralPath $releaseAssetRoot) {
 New-Item -ItemType Directory -Path $releaseAssetRoot -Force | Out-Null
 
 $files = foreach ($asset in $releaseAssetSources.GetEnumerator()) {
-    $source = Join-Path $RepositoryRoot $asset.Value
+    $source = Join-Path $RepositoryRoot $asset.Value.Source
     if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
-        throw "Required release source '$($asset.Value)' is missing."
+        throw "Required release source '$($asset.Value.Source)' is missing."
     }
     $destination = Join-Path $releaseAssetRoot $asset.Key
-    Copy-Item -LiteralPath $source -Destination $destination
+    if ($asset.Value.NormalizeText) {
+        $content = Get-NormalizedTextContent -Path $source
+        [System.IO.File]::WriteAllText(
+            $destination,
+            $content,
+            [System.Text.UTF8Encoding]::new($false)
+        )
+    }
+    else {
+        Copy-Item -LiteralPath $source -Destination $destination
+    }
     Get-Item -LiteralPath $destination
 }
 
@@ -52,7 +74,7 @@ $artifacts = @(
 
 $manifest = [ordered]@{
     schemaVersion         = '1.0.0'
-    solutionVersion       = '0.1.1'
+    solutionVersion       = '0.1.2'
     contentManifestSha256 = Get-Sha256 -Path $contentManifestPath
     artifacts             = $artifacts
 }
