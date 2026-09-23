@@ -45,15 +45,15 @@ function Get-ContentEntries {
             throw "Metadata '$($metadataFile.FullName)' has no paired source '$sourceFileName'."
         }
 
-        $sourceRaw = Get-Content -LiteralPath $sourcePath -Raw
+        $sourceRaw = Get-NormalizedTextContent -Path $sourcePath
         $common = [ordered]@{
             id           = [string]$metadata.name
             resourceName = [string]$metadata.name
             displayName  = [string]$metadata.displayName
-            version      = '0.1.1'
+            version      = '0.1.2'
             source       = ConvertTo-RepositoryPath -Path $sourcePath -RepositoryRoot $RepositoryRoot
             metadata     = ConvertTo-RepositoryPath -Path $metadataFile.FullName -RepositoryRoot $RepositoryRoot
-            sha256       = Get-Sha256 -Path $sourcePath
+            sha256       = Get-NormalizedTextSha256 -Path $sourcePath
             controlOwner = [string]$metadata.authoritativeControlOwner.name
         }
 
@@ -175,7 +175,7 @@ do {
 
 $manifest = [ordered]@{
     schemaVersion   = '1.0.0'
-    solutionVersion = '0.1.1'
+    solutionVersion = '0.1.2'
     functions       = @(Get-ContentEntries -Kind functions)
     analytics       = @(Get-ContentEntries -Kind analytics)
     workbooks       = @(Get-ContentEntries -Kind workbooks)

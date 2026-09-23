@@ -37,8 +37,11 @@ jobs:
 
       - name: Validate sample Bicep parameter files
         shell: pwsh
+        env:
+          AZURE_CONFIG_DIR: ${{ runner.temp }}/azure-config
         run: |
-          az bicep install
+          az bicep install --version v0.46.1
+          az bicep version
           az bicep build-params --file ./infra/greenfield/main.bicepparam --outfile "$env:RUNNER_TEMP/greenfield.parameters.json"
           az bicep build-params --file ./infra/existing-workspace/main.bicepparam --outfile "$env:RUNNER_TEMP/existing-workspace.parameters.json"
 

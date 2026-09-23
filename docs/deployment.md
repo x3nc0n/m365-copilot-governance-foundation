@@ -10,7 +10,7 @@ Use tagged release assets for production-like deployment. Build from source for 
 ## Prerequisites
 
 - PowerShell 7.4+
-- Azure CLI and current Bicep CLI support
+- Azure CLI with Bicep CLI `0.46.1`
 - Azure subscription and target resource group
 - A region supporting Log Analytics and Microsoft Sentinel
 - Required Microsoft 365, Purview, Defender, Entra, and Global Secure Access licenses for selected sources
@@ -28,7 +28,16 @@ Install-Module Pester -Scope CurrentUser
 Install-Module PSScriptAnalyzer -Scope CurrentUser
 ```
 
-Pin approved versions in controlled build environments. Authentication is an explicit operator action; scripts must not cache or print access tokens. Version 0.1.1 does not automatically authenticate or perform live tenant queries: `-Online` returns a handoff warning for separately authorized validation.
+Pin approved versions in controlled build environments. Authentication is an explicit operator action; scripts must not cache or print access tokens. Version 0.1.2 does not automatically authenticate or perform live tenant queries: `-Online` returns a handoff warning for separately authorized validation.
+
+Install the compiler used for canonical artifacts before running the build:
+
+```powershell
+az bicep install --version v0.46.1
+az bicep version
+```
+
+The build fails with an actionable error if Azure CLI reports any other Bicep version.
 
 ## Least privilege
 
@@ -54,7 +63,7 @@ Both paths use these exact parameters:
 |---|---|---|
 | `location` | string | Resource-group location |
 | `solutionName` | string | `m365CopilotGovernance` |
-| `solutionVersion` | string | `0.1.1` |
+| `solutionVersion` | string | `0.1.2` |
 | `resourceNamePrefix` | string | `m365gov` |
 | `deployFunctions` | bool | `true` |
 | `deployAnalytics` | bool | `true` |
@@ -150,7 +159,7 @@ The content module loads `generated/content-manifest.json`. Regenerate that mani
      --parameters .\infra\greenfield\main.bicepparam
 
    az deployment group create `
-     --name m365gov-v0-1-1-greenfield `
+     --name m365gov-v0-1-2-greenfield `
      --resource-group <resource-group> `
      --template-file .\infra\greenfield\main.bicep `
      --parameters .\infra\greenfield\main.bicepparam
@@ -180,7 +189,7 @@ The content module loads `generated/content-manifest.json`. Regenerate that mani
      --parameters .\infra\existing-workspace\main.bicepparam
 
    az deployment group create `
-     --name m365gov-v0-1-1-existing `
+     --name m365gov-v0-1-2-existing `
      --resource-group <resource-group> `
      --template-file .\infra\existing-workspace\main.bicep `
      --parameters .\infra\existing-workspace\main.bicepparam
@@ -205,7 +214,7 @@ az deployment group what-if `
   --parameters .\infra\greenfield\main.bicepparam
 
 az deployment group create `
-  --name m365gov-v0-1-1-greenfield `
+  --name m365gov-v0-1-2-greenfield `
   --resource-group <resource-group> `
   --template-file .\infra\greenfield\main.bicep `
   --parameters .\infra\greenfield\main.bicepparam
@@ -217,7 +226,7 @@ Substitute the existing-workspace paths and use a distinct deployment name for t
 
 Validation commands are read-only by default. A tenant mutation requires `-Bootstrap` or another narrowly named mutation switch. Every mutating command must support `SupportsShouldProcess`, `-WhatIf`, and `-Confirm`, and must report the exact intended and applied difference.
 
-`Initialize-CollectorIdentity.ps1` has exact parameters `Bootstrap` and `OutputFormat`. Without `-Bootstrap`, it returns a skipped result. With `-Bootstrap`, v0.1.1 still creates no identity or consent; it exercises the `ShouldProcess` boundary and returns an explicit warning. Example safety flow:
+`Initialize-CollectorIdentity.ps1` has exact parameters `Bootstrap` and `OutputFormat`. Without `-Bootstrap`, it returns a skipped result. With `-Bootstrap`, v0.1.2 still creates no identity or consent; it exercises the `ShouldProcess` boundary and returns an explicit warning. Example safety flow:
 
 ```powershell
 .\scripts\Initialize-CollectorIdentity.ps1 -Bootstrap -WhatIf
@@ -228,16 +237,16 @@ Use `Get-Help <script> -Full` for the exact frozen parameters. Administrator con
 
 ## Deploy to Azure portal assets
 
-Version 0.1.1 uses these immutable raw tagged templates after the release tag is published:
+Version 0.1.2 uses these immutable raw tagged templates after the release tag is published:
 
 ```text
-https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.1/generated/release-assets/greenfield.json
-https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.1/generated/release-assets/existing-workspace.json
+https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.2/generated/release-assets/greenfield.json
+https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.2/generated/release-assets/existing-workspace.json
 ```
 
-Portal definition assets use the corresponding `greenfield.createUiDefinition.json` and `existing-workspace.createUiDefinition.json` names. Publish the `v0.1.1` GitHub Release with all required assets before using these URLs.
+Portal definition assets use the corresponding `greenfield.createUiDefinition.json` and `existing-workspace.createUiDefinition.json` names. Publish the `v0.1.2` GitHub Release with all required assets before using these URLs.
 
-Azure Portal must retrieve both files cross-origin. Follow the [Microsoft Deploy to Azure button guidance](https://learn.microsoft.com/azure/azure-resource-manager/templates/deploy-to-azure-button): use each raw GitHub URL, URL-encode it, and append it to the portal route. The raw tagged URLs provide the required CORS response and remain immutable because they are pinned to `v0.1.1`.
+Azure Portal must retrieve both files cross-origin. Follow the [Microsoft Deploy to Azure button guidance](https://learn.microsoft.com/azure/azure-resource-manager/templates/deploy-to-azure-button): use each raw GitHub URL, URL-encode it, and append it to the portal route. The raw tagged URLs provide the required CORS response and remain immutable because they are pinned to `v0.1.2`.
 
 GitHub Release assets serve a different purpose: human downloads, `release-manifest.json`, `checksums.sha256`, and release provenance. A successful release-asset download does not prove that Azure Portal can fetch that response cross-origin. Before opening a Deploy to Azure link, complete both the [portal header verification](release.md#verify-the-portal-assets) and the [release checksum verification](release.md#verify-the-published-release).
 

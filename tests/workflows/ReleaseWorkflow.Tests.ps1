@@ -2,6 +2,8 @@ BeforeAll {
     $script:RepositoryRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
     $script:WorkflowPath = Join-Path $script:RepositoryRoot '.github/workflows/release.yml'
     $script:Workflow = Get-Content -LiteralPath $script:WorkflowPath -Raw
+    $script:BuildWorkflow = Get-Content -LiteralPath (Join-Path $script:RepositoryRoot '.github/workflows/build.yml') -Raw
+    $script:CommonBuild = Get-Content -LiteralPath (Join-Path $script:RepositoryRoot 'build/Common.ps1') -Raw
     $script:ExpectedAssets = @(
         'generated/release-assets/greenfield.json'
         'generated/release-assets/existing-workspace.json'
@@ -24,6 +26,15 @@ Describe 'Release workflow' {
         $script:Workflow | Should -Match 'Install-Module Pester -MinimumVersion 5\.6\.1'
         $script:Workflow | Should -Match 'Install-Module PSScriptAnalyzer -MinimumVersion 1\.22\.0'
         $script:Workflow | Should -Not -Match '(?i)(azure/login|client-id|tenant-id|subscription-id|AZURE_CREDENTIALS)'
+    }
+
+    It 'pins Bicep 0.46.1 in build, release, and local version enforcement' {
+        $script:BuildWorkflow | Should -Match 'az bicep install --version v0\.46\.1'
+        $script:Workflow | Should -Match 'az bicep install --version v0\.46\.1'
+        $script:CommonBuild | Should -Match "\`$script:RequiredBicepVersion = '0\.46\.1'"
+        $script:CommonBuild | Should -Match "az bicep install --version v\`$script:RequiredBicepVersion"
+        $script:BuildWorkflow | Should -Not -Match '(?m)az bicep install\s*$'
+        $script:Workflow | Should -Not -Match '(?m)az bicep install\s*$'
     }
 
     It 'runs the canonical CI build twice and rejects generated drift' {
