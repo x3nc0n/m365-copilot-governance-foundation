@@ -16,16 +16,19 @@ Start with the exact release tag, scenario, command, and sanitized structured re
 
 ## Bicep build fails
 
-1. Confirm current Azure CLI/Bicep versions.
+1. Confirm Azure CLI is using the pinned Bicep CLI `0.46.1`.
 2. Run the failing entry point directly.
 3. Verify module paths and JSON assets.
 4. Do not hand-edit compiled templates; fix source and rebuild.
 
 ```powershell
+az bicep install --version v0.46.1
 az bicep version
 az bicep build --file .\infra\greenfield\main.bicep
 az bicep build --file .\infra\existing-workspace\main.bicep
 ```
+
+The canonical build intentionally fails if another Bicep version is installed because compiler metadata and generated template hashes are release inputs.
 
 ## Portal deployment fails while the release asset downloads
 
@@ -34,13 +37,13 @@ Azure Portal fetches the template and `createUiDefinition` cross-origin. A GitHu
 The portal links must use the immutable raw tagged files under:
 
 ```text
-https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.1/generated/release-assets/<asset>
+https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.2/generated/release-assets/<asset>
 ```
 
 Verify all four responses anonymously:
 
 ```powershell
-$baseUri = 'https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.1/generated/release-assets'
+$baseUri = 'https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.2/generated/release-assets'
 $assets = @(
   'greenfield.json'
   'greenfield.createUiDefinition.json'
@@ -63,11 +66,13 @@ If the raw response returns `200` and valid JSON but the header is missing or is
 
 ## Release asset returns 404
 
+The `v0.1.1` tag exists, but its release workflow failed during generated-artifact drift validation before assets were published. Keep that tag immutable and use the `v0.1.2` recovery release after its workflow succeeds.
+
 Immutable release download URLs require three separate GitHub objects: the tag, the GitHub Release associated with that tag, and the named release asset. Diagnose them in that order; do not replace an immutable URL with a moving `main` or `dev` branch.
 
 ```powershell
 $Repository = 'x3nc0n/m365-copilot-governance-foundation'
-$Tag = 'v0.1.1'
+$Tag = 'v0.1.2'
 
 # 1. Confirm that the Git tag exists.
 gh api "repos/$Repository/git/ref/tags/$Tag"
@@ -87,7 +92,7 @@ Test the public path without GitHub CLI credentials, then verify the downloaded 
 
 ```powershell
 $Repository = 'x3nc0n/m365-copilot-governance-foundation'
-$Tag = 'v0.1.1'
+$Tag = 'v0.1.2'
 $Asset = 'greenfield.json'
 $BaseUri = "https://github.com/$Repository/releases/download/$Tag"
 
@@ -143,7 +148,7 @@ Use `Test-GraphAccess.ps1` and compare required versus effective permissions. Au
 
 ## Bootstrap does not change anything
 
-This is expected in v0.1.1. Without `-Bootstrap`, the command returns a skipped result. With `-Bootstrap`, preview with `-WhatIf`; a confirmed run still creates no identity or consent and returns a warning that the MVP preserves the human-controlled handoff. A denied confirmation or missing approval also leaves the tenant unchanged.
+This is expected in v0.1.2. Without `-Bootstrap`, the command returns a skipped result. With `-Bootstrap`, preview with `-WhatIf`; a confirmed run still creates no identity or consent and returns a warning that the MVP preserves the human-controlled handoff. A denied confirmation or missing approval also leaves the tenant unchanged.
 
 ## Workbook is empty
 

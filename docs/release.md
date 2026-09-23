@@ -19,7 +19,9 @@ Use Semantic Versioning. A breaking change includes incompatible parameter/outpu
 11. Test README release links and Deploy to Azure flows.
 12. Record validation evidence; do not perform a live deployment without separate authorization.
 
-## Version 0.1.1 release-candidate assets
+## Version 0.1.2 release-candidate assets
+
+The immutable `v0.1.1` tag points to the issue #7 UI changes, but its release workflow run failed before publishing assets. Do not move or replace that tag. Version `v0.1.2` is the recovery release containing the same UI work plus deterministic cross-platform generation.
 
 Expected immutable assets:
 
@@ -35,10 +37,10 @@ checksums.sha256
 They are published under:
 
 ```text
-https://github.com/x3nc0n/m365-copilot-governance-foundation/releases/download/v0.1.1/<asset>
+https://github.com/x3nc0n/m365-copilot-governance-foundation/releases/download/v0.1.2/<asset>
 ```
 
-A git tag identifies a source revision, but it does not provide downloadable assets. A `/releases/download/<tag>/<asset>` URL requires both a GitHub Release associated with the tag and an uploaded asset with that exact name. The `v0.1.1` URLs remain unavailable until the tag-triggered workflow publishes all six assets listed above.
+A git tag identifies a source revision, but it does not provide downloadable assets. A `/releases/download/<tag>/<asset>` URL requires both a GitHub Release associated with the tag and an uploaded asset with that exact name. The `v0.1.2` URLs remain unavailable until the tag-triggered workflow publishes all six assets listed above.
 
 `generated/release-manifest.json` and `generated/checksums.sha256` use these flattened upload names rather than source-tree paths. The two portal definitions are intentionally renamed during packaging so they cannot collide.
 
@@ -49,7 +51,7 @@ Azure Portal uses immutable raw tagged files rather than GitHub Release download
 Run this from PowerShell without GitHub authentication. It checks all four portal files, requires the CORS header, and parses each response as JSON.
 
 ```powershell
-$tag = 'v0.1.1'
+$tag = 'v0.1.2'
 $baseUri = "https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/$tag/generated/release-assets"
 $assets = @(
   'greenfield.json'
@@ -74,14 +76,14 @@ This verifies anonymous Azure Portal transport only. Continue with the release v
 
 ## Automatic tag releases
 
-The tag-triggered workflow at `.github/workflows/release.yml` is the canonical automation for building, verifying, and publishing release assets for version tags. Do not treat a successful tag push alone as release completion: wait for the workflow and then verify the anonymously downloadable assets. The workflow file is authoritative for its implementation details.
+The tag-triggered workflow at `.github/workflows/release.yml` is the canonical automation for building, verifying, and publishing release assets for version tags. It installs Bicep CLI `0.46.1`, runs the canonical build twice, compares release-asset hashes, and rejects tracked drift in `generated` and `infra/compiled`. Do not treat a successful tag push alone as release completion: wait for the workflow and then verify the anonymously downloadable assets. The workflow file is authoritative for its implementation details.
 
 ## Verify the published release
 
 Run this from PowerShell without GitHub authentication. It downloads every expected asset, parses every JSON asset, and verifies every payload covered by `checksums.sha256`. Do not consider the release complete unless the command succeeds.
 
 ```powershell
-$tag = 'v0.1.1'
+$tag = 'v0.1.2'
 $baseUri = "https://github.com/x3nc0n/m365-copilot-governance-foundation/releases/download/$tag"
 $assets = @(
   'greenfield.json'

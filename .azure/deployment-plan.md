@@ -1,9 +1,9 @@
 # Azure Deployment Plan
 
-> **Status:** Ready for Validation
-> **Current phase:** Issue #7 implementation and offline verification are complete; the previously validated v0.1.0 evidence remains historical and is superseded by this pending v0.1.1 change
-> **Next status:** Validated after CreateUiDefinition Sandbox, immutable-tag CORS, and authorized Azure `validate`/`what-if` checks complete
-> **Approval:** The user explicitly approved the issue #7 plan on September 22, 2026 and authorized end-to-end implementation without deploying Azure resources.
+> **Status:** Ready for Release Validation
+> **Current phase:** Issue #10 implements deterministic cross-platform generation and the `v0.1.2` recovery candidate after the immutable `v0.1.1` release workflow failed before asset publication
+> **Next status:** Validated after the `v0.1.2` tag workflow succeeds, published assets and tagged raw URLs are verified, CreateUiDefinition Sandbox is exercised, and authorized Azure `validate`/`what-if` checks complete
+> **Approval:** The user authorized issue #10 implementation and offline validation on September 22, 2026 without committing, pushing, tagging, publishing a release, or deploying Azure resources.
 
 **Generated:** 2026-09-22
 **Owner:** Trinity, Azure IaC Engineer
@@ -851,3 +851,32 @@ Remaining validation risk:
 - The CreateUiDefinition Sandbox requires an authenticated Azure portal session and was not exercised in this noninteractive handoff.
 - The pending raw `v0.1.1` URLs and live CORS behavior cannot be tested until the immutable tag is published.
 - Subscription-scoped Azure `validate` and `what-if` require an authorized test subscription and were intentionally not run; no Azure resources were deployed.
+
+## 18. Cross-platform release reproducibility recovery (`v0.1.2`)
+
+The immutable `v0.1.1` tag exists at commit `07b1953ecd52aeb714da913dbbe309a2f4905b24`, but release workflow run `35787111205` failed before publishing assets. Windows generation had hashed and embedded CRLF source bytes and compiled with Bicep `0.44.1`; the Linux runner used LF source bytes and Bicep `0.46.1`. The release drift gate correctly rejected the differing manifest, compiled templates, and downstream release assets.
+
+Issue #10 changes the canonical contract as follows:
+
+- textual source files are normalized to LF before their content is embedded or hashed in the content manifest;
+- packaged release assets continue to use byte-exact file hashing;
+- Bicep CLI `0.46.1` is installed explicitly in build and release workflows;
+- local canonical compilation rejects any other Bicep version with an installation command;
+- release tests cover LF/CRLF equivalence for content sources and packaged portal JSON, byte-exact release manifest sizes and hashes, checksums, compiler pinning, two-build hash comparison, and tracked generated-artifact drift.
+
+Offline validation evidence for this section must record the exact command results after regeneration. It does **not** claim that `v0.1.2` tagged raw URLs, CORS behavior, GitHub Release publication, CreateUiDefinition Sandbox, or Azure `validate`/`what-if` have passed; those checks require the future immutable tag, authenticated portal access, or an authorized Azure subscription.
+
+Validation completed on September 23, 2026:
+
+| Check | Result | Evidence |
+|---|---|---|
+| Pinned compiler | Passed | `az bicep version` reported `0.46.1 (545b338e2c)` |
+| Canonical CI build | Passed | `pwsh -NoProfile -File .\build\Invoke-Build.ps1 -CI` |
+| Pester | Passed | 54 passed, 0 failed, 0 skipped |
+| JSON validation | Passed | 33 JSON files |
+| PowerShell analysis | Passed | Zero PSScriptAnalyzer findings |
+| LF/CRLF regressions | Passed | Isolated LF and CRLF source trees produced byte-identical content manifests, packaged portal JSON, release manifests, and checksums; packaged portal metadata matched final LF bytes exactly |
+| Release determinism gate | Passed | A second canonical build preserved all six release-asset SHA-256 values |
+| Generated drift gate | Passed | After staging expected regenerated outputs, `git diff --exit-code -- generated infra/compiled` was clean |
+| Tagged raw URL/CORS checks | Not run | `v0.1.2` does not exist yet; no tagged CORS success is claimed |
+| Azure validation/deployment | Not run | No authorized `validate`, `what-if`, or resource mutation was performed |

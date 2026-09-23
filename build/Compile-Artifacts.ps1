@@ -22,6 +22,9 @@ $az = Get-Command az -ErrorAction SilentlyContinue
 if (-not $az -and $RequireBicep) {
     throw 'Azure CLI is required to compile Bicep entry points and parameter files.'
 }
+if ($az) {
+    Assert-BicepVersion -AzureCli $az
+}
 
 foreach ($entry in $entryPoints.GetEnumerator()) {
     $source = Join-Path $RepositoryRoot $entry.Key

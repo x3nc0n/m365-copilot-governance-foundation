@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.44.1.10279",
-      "templateHash": "17864349545586528670"
+      "version": "0.46.1.21595",
+      "templateHash": "11822024270035987679"
     }
   },
   "parameters": {
@@ -26,7 +26,7 @@
     },
     "solutionVersion": {
       "type": "string",
-      "defaultValue": "0.1.1",
+      "defaultValue": "0.1.2",
       "minLength": 1,
       "metadata": {
         "description": "Solution content version."
@@ -135,8 +135,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.44.1.10279",
-              "templateHash": "3618308392203836831"
+              "version": "0.46.1.21595",
+              "templateHash": "3449948392256110878"
             }
           },
           "parameters": {
@@ -198,63 +198,63 @@
           "variables": {
             "$fxv#0": {
               "schemaVersion": "1.0.0",
-              "solutionVersion": "0.1.1",
+              "solutionVersion": "0.1.2",
               "functions": [
                 {
                   "id": "M365Gov_AiActivity",
                   "resourceName": "M365Gov_AiActivity",
                   "displayName": "M365 Governance AI Activity",
-                  "version": "0.1.1",
+                  "version": "0.1.2",
                   "source": "src/functions/M365Gov_AiActivity.kql",
                   "metadata": "src/functions/M365Gov_AiActivity.metadata.json",
-                  "sha256": "2f562426dbe216ff28914e33035aa9018bd6a0b985a22ca3cf713e7ad57c60ee",
+                  "sha256": "75fe86ad8f5e7a5b051c601dbf55e739886b7e0aa09eb43ba4d9592aeda90867",
                   "controlOwner": "The source AI platform and its native governance service",
                   "category": "M365 Copilot Governance",
                   "functionAlias": "M365Gov_AiActivity",
                   "functionParameters": "starttime:datetime = ago(14d), endtime:datetime = now()",
-                  "query": "_Im_AgentEvent(starttime=starttime, endtime=endtime)\r\n| project\r\n    TimeGenerated,\r\n    EventStartTime,\r\n    EventEndTime,\r\n    IngestionTime = ingestion_time(),\r\n    EventUid,\r\n    EventOriginalUid,\r\n    EventType,\r\n    EventOriginalType,\r\n    EventResult,\r\n    EventResultDetails,\r\n    ActorUsername,\r\n    ActorUserId,\r\n    ActingAppId,\r\n    ActingAppName,\r\n    SrcAgentId,\r\n    SrcAgentName,\r\n    TargetAgentId,\r\n    TargetAgentName,\r\n    PlatformTargetAgentId,\r\n    PlatformTargetAgentName,\r\n    ModelProviderName,\r\n    ModelName,\r\n    ToolId,\r\n    ToolName,\r\n    EventSessionId,\r\n    EventRequestId,\r\n    EventResponseId,\r\n    EventProduct,\r\n    EventVendor,\r\n    EventSchema,\r\n    EventSchemaVersion\r\n| extend\r\n    GovernanceFunction = \"M365Gov_AiActivity\",\r\n    AuthoritativeControlOwner = \"Source AI platform; Microsoft Sentinel ASIM provides normalization\",\r\n    NativePortalRoute = \"https://security.microsoft.com/\""
+                  "query": "_Im_AgentEvent(starttime=starttime, endtime=endtime)\n| project\n    TimeGenerated,\n    EventStartTime,\n    EventEndTime,\n    IngestionTime = ingestion_time(),\n    EventUid,\n    EventOriginalUid,\n    EventType,\n    EventOriginalType,\n    EventResult,\n    EventResultDetails,\n    ActorUsername,\n    ActorUserId,\n    ActingAppId,\n    ActingAppName,\n    SrcAgentId,\n    SrcAgentName,\n    TargetAgentId,\n    TargetAgentName,\n    PlatformTargetAgentId,\n    PlatformTargetAgentName,\n    ModelProviderName,\n    ModelName,\n    ToolId,\n    ToolName,\n    EventSessionId,\n    EventRequestId,\n    EventResponseId,\n    EventProduct,\n    EventVendor,\n    EventSchema,\n    EventSchemaVersion\n| extend\n    GovernanceFunction = \"M365Gov_AiActivity\",\n    AuthoritativeControlOwner = \"Source AI platform; Microsoft Sentinel ASIM provides normalization\",\n    NativePortalRoute = \"https://security.microsoft.com/\""
                 },
                 {
                   "id": "M365Gov_AuthenticationEvents",
                   "resourceName": "M365Gov_AuthenticationEvents",
                   "displayName": "M365 Governance Authentication Events",
-                  "version": "0.1.1",
+                  "version": "0.1.2",
                   "source": "src/functions/M365Gov_AuthenticationEvents.kql",
                   "metadata": "src/functions/M365Gov_AuthenticationEvents.metadata.json",
-                  "sha256": "1ecf17709d511228bf1dffe609120c0877d58595aa1a11133d36dd1ef7b411fb",
+                  "sha256": "5bfcfad8c4f63d5f76d60bb6f50f2e6a4dfb85cf9bedc3584e94b775dc72425d",
                   "controlOwner": "Microsoft Entra ID or the authentication source represented by ASIM",
                   "category": "M365 Copilot Governance",
                   "functionAlias": "M365Gov_AuthenticationEvents",
                   "functionParameters": "starttime:datetime = ago(14d), endtime:datetime = now()",
-                  "query": "_Im_Authentication(starttime=starttime, endtime=endtime)\r\n| project\r\n    TimeGenerated,\r\n    EventStartTime,\r\n    EventEndTime,\r\n    IngestionTime = ingestion_time(),\r\n    EventUid,\r\n    EventType,\r\n    EventResult,\r\n    EventResultDetails,\r\n    EventOriginalResultDetails,\r\n    ActorUsername,\r\n    ActorUserId,\r\n    TargetUsername,\r\n    TargetUserId,\r\n    SrcIpAddr,\r\n    SrcGeoCountry,\r\n    TargetAppName,\r\n    TargetAppId,\r\n    LogonMethod,\r\n    EventProduct,\r\n    EventVendor,\r\n    EventSchema,\r\n    EventSchemaVersion\r\n| extend\r\n    GovernanceFunction = \"M365Gov_AuthenticationEvents\",\r\n    AuthoritativeControlOwner = \"Microsoft Entra ID and the source authentication provider\",\r\n    NativePortalRoute = \"https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/SignIns\""
+                  "query": "_Im_Authentication(starttime=starttime, endtime=endtime)\n| project\n    TimeGenerated,\n    EventStartTime,\n    EventEndTime,\n    IngestionTime = ingestion_time(),\n    EventUid,\n    EventType,\n    EventResult,\n    EventResultDetails,\n    EventOriginalResultDetails,\n    ActorUsername,\n    ActorUserId,\n    TargetUsername,\n    TargetUserId,\n    SrcIpAddr,\n    SrcGeoCountry,\n    TargetAppName,\n    TargetAppId,\n    LogonMethod,\n    EventProduct,\n    EventVendor,\n    EventSchema,\n    EventSchemaVersion\n| extend\n    GovernanceFunction = \"M365Gov_AuthenticationEvents\",\n    AuthoritativeControlOwner = \"Microsoft Entra ID and the source authentication provider\",\n    NativePortalRoute = \"https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/SignIns\""
                 },
                 {
                   "id": "M365Gov_DataHealth",
                   "resourceName": "M365Gov_DataHealth",
                   "displayName": "M365 Governance Data Health",
-                  "version": "0.1.1",
+                  "version": "0.1.2",
                   "source": "src/functions/M365Gov_DataHealth.kql",
                   "metadata": "src/functions/M365Gov_DataHealth.metadata.json",
-                  "sha256": "c18b5cda723283d07d3c69f76f6ededa1568151b433aabc03080935a09dd31d0",
+                  "sha256": "4bb0d7e001fa938c73e96a72c73b425d1e79919208659345ffd1441b7bac5940",
                   "controlOwner": "Each source product owns its telemetry; Microsoft Sentinel owns workspace ingestion health",
                   "category": "M365 Copilot Governance",
                   "functionAlias": "M365Gov_DataHealth",
                   "functionParameters": "lookback:timespan = 24h",
-                  "query": "let healthWindow = iff(isnull(lookback), 24h, lookback);\r\nlet expected = datatable(\r\n    TableName:string,\r\n    AuthoritativeControlOwner:string,\r\n    NativePortalRoute:string,\r\n    RequiredForMvp:bool,\r\n    ExpectedFreshness:timespan\r\n)\r\n[\r\n    \"CopilotActivity\", \"Microsoft Purview Audit / Microsoft 365 audit\", \"https://purview.microsoft.com/audit\", true, 6h,\r\n    \"SecurityAlert\", \"Originating Microsoft Defender, Entra, or Purview alert provider\", \"https://security.microsoft.com/alerts\", true, 2h,\r\n    \"SecurityIncident\", \"Microsoft Sentinel investigation container\", \"https://portal.azure.com/#view/Microsoft_Azure_Security_Insights/WorkspaceSelectorBlade\", true, 2h,\r\n    \"SigninLogs\", \"Microsoft Entra ID\", \"https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/SignIns\", true, 2h,\r\n    \"AADNonInteractiveUserSignInLogs\", \"Microsoft Entra ID\", \"https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/SignIns\", false, 2h,\r\n    \"AuditLogs\", \"Microsoft Entra ID\", \"https://entra.microsoft.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Audit\", true, 4h,\r\n    \"IdentityInfo\", \"Microsoft Defender XDR\", \"https://security.microsoft.com/\", false, 24h,\r\n    \"CloudAppEvents\", \"Microsoft Defender for Cloud Apps\", \"https://security.microsoft.com/cloudapps\", false, 4h,\r\n    \"AlertInfo\", \"Microsoft Defender XDR\", \"https://security.microsoft.com/alerts\", false, 2h,\r\n    \"AlertEvidence\", \"Microsoft Defender XDR\", \"https://security.microsoft.com/alerts\", false, 2h,\r\n    \"DeviceEvents\", \"Microsoft Defender for Endpoint\", \"https://security.microsoft.com/advanced-hunting\", false, 4h,\r\n    \"IdentityLogonEvents\", \"Microsoft Defender for Identity / Defender XDR\", \"https://security.microsoft.com/advanced-hunting\", false, 4h,\r\n    \"IdentityDirectoryEvents\", \"Microsoft Defender for Identity / Defender XDR\", \"https://security.microsoft.com/advanced-hunting\", false, 4h,\r\n    \"IdentityQueryEvents\", \"Microsoft Defender for Identity / Defender XDR\", \"https://security.microsoft.com/advanced-hunting\", false, 4h,\r\n    \"MicrosoftPurviewInformationProtection\", \"Microsoft Purview Information Protection\", \"https://purview.microsoft.com/\", false, 24h,\r\n    \"OfficeActivity\", \"Microsoft Purview Audit / Microsoft 365 workloads\", \"https://purview.microsoft.com/audit\", true, 6h,\r\n    \"EnrichedMicrosoft365AuditLogs\", \"Microsoft Purview Audit\", \"https://purview.microsoft.com/audit\", false, 6h,\r\n    \"NetworkAccessGenerativeAIInsights\", \"Microsoft Entra Global Secure Access (preview)\", \"https://entra.microsoft.com/\", false, 6h\r\n];\r\nlet observed =\r\n    union isfuzzy=true\r\n    (CopilotActivity | where TimeGenerated > ago(healthWindow) | project TableName=\"CopilotActivity\", TimeGenerated),\r\n    (SecurityAlert | where TimeGenerated > ago(healthWindow) | project TableName=\"SecurityAlert\", TimeGenerated),\r\n    (SecurityIncident | where TimeGenerated > ago(healthWindow) | project TableName=\"SecurityIncident\", TimeGenerated),\r\n    (SigninLogs | where TimeGenerated > ago(healthWindow) | project TableName=\"SigninLogs\", TimeGenerated),\r\n    (AADNonInteractiveUserSignInLogs | where TimeGenerated > ago(healthWindow) | project TableName=\"AADNonInteractiveUserSignInLogs\", TimeGenerated),\r\n    (AuditLogs | where TimeGenerated > ago(healthWindow) | project TableName=\"AuditLogs\", TimeGenerated),\r\n    (IdentityInfo | where TimeGenerated > ago(healthWindow) | project TableName=\"IdentityInfo\", TimeGenerated),\r\n    (CloudAppEvents | where TimeGenerated > ago(healthWindow) | project TableName=\"CloudAppEvents\", TimeGenerated),\r\n    (AlertInfo | where TimeGenerated > ago(healthWindow) | project TableName=\"AlertInfo\", TimeGenerated),\r\n    (AlertEvidence | where TimeGenerated > ago(healthWindow) | project TableName=\"AlertEvidence\", TimeGenerated),\r\n    (DeviceEvents | where TimeGenerated > ago(healthWindow) | project TableName=\"DeviceEvents\", TimeGenerated),\r\n    (IdentityLogonEvents | where TimeGenerated > ago(healthWindow) | project TableName=\"IdentityLogonEvents\", TimeGenerated),\r\n    (IdentityDirectoryEvents | where TimeGenerated > ago(healthWindow) | project TableName=\"IdentityDirectoryEvents\", TimeGenerated),\r\n    (IdentityQueryEvents | where TimeGenerated > ago(healthWindow) | project TableName=\"IdentityQueryEvents\", TimeGenerated),\r\n    (MicrosoftPurviewInformationProtection | where TimeGenerated > ago(healthWindow) | project TableName=\"MicrosoftPurviewInformationProtection\", TimeGenerated),\r\n    (OfficeActivity | where TimeGenerated > ago(healthWindow) | project TableName=\"OfficeActivity\", TimeGenerated),\r\n    (EnrichedMicrosoft365AuditLogs | where TimeGenerated > ago(healthWindow) | project TableName=\"EnrichedMicrosoft365AuditLogs\", TimeGenerated),\r\n    (NetworkAccessGenerativeAIInsights | where TimeGenerated > ago(healthWindow) | project TableName=\"NetworkAccessGenerativeAIInsights\", TimeGenerated),\r\n    (datatable(TableName:string, TimeGenerated:datetime)[])\r\n    | summarize LastEventTime=max(TimeGenerated), EventCount=count() by TableName;\r\nexpected\r\n| join kind=leftouter observed on TableName\r\n| extend\r\n    Age = now() - LastEventTime,\r\n    Status = case(\r\n        isnull(LastEventTime), \"UnavailableOrSilent\",\r\n        Age > ExpectedFreshness, \"Stale\",\r\n        \"Healthy\"),\r\n    GovernanceFunction = \"M365Gov_DataHealth\"\r\n| project-away TableName1"
+                  "query": "let healthWindow = iff(isnull(lookback), 24h, lookback);\nlet expected = datatable(\n    TableName:string,\n    AuthoritativeControlOwner:string,\n    NativePortalRoute:string,\n    RequiredForMvp:bool,\n    ExpectedFreshness:timespan\n)\n[\n    \"CopilotActivity\", \"Microsoft Purview Audit / Microsoft 365 audit\", \"https://purview.microsoft.com/audit\", true, 6h,\n    \"SecurityAlert\", \"Originating Microsoft Defender, Entra, or Purview alert provider\", \"https://security.microsoft.com/alerts\", true, 2h,\n    \"SecurityIncident\", \"Microsoft Sentinel investigation container\", \"https://portal.azure.com/#view/Microsoft_Azure_Security_Insights/WorkspaceSelectorBlade\", true, 2h,\n    \"SigninLogs\", \"Microsoft Entra ID\", \"https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/SignIns\", true, 2h,\n    \"AADNonInteractiveUserSignInLogs\", \"Microsoft Entra ID\", \"https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/SignIns\", false, 2h,\n    \"AuditLogs\", \"Microsoft Entra ID\", \"https://entra.microsoft.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Audit\", true, 4h,\n    \"IdentityInfo\", \"Microsoft Defender XDR\", \"https://security.microsoft.com/\", false, 24h,\n    \"CloudAppEvents\", \"Microsoft Defender for Cloud Apps\", \"https://security.microsoft.com/cloudapps\", false, 4h,\n    \"AlertInfo\", \"Microsoft Defender XDR\", \"https://security.microsoft.com/alerts\", false, 2h,\n    \"AlertEvidence\", \"Microsoft Defender XDR\", \"https://security.microsoft.com/alerts\", false, 2h,\n    \"DeviceEvents\", \"Microsoft Defender for Endpoint\", \"https://security.microsoft.com/advanced-hunting\", false, 4h,\n    \"IdentityLogonEvents\", \"Microsoft Defender for Identity / Defender XDR\", \"https://security.microsoft.com/advanced-hunting\", false, 4h,\n    \"IdentityDirectoryEvents\", \"Microsoft Defender for Identity / Defender XDR\", \"https://security.microsoft.com/advanced-hunting\", false, 4h,\n    \"IdentityQueryEvents\", \"Microsoft Defender for Identity / Defender XDR\", \"https://security.microsoft.com/advanced-hunting\", false, 4h,\n    \"MicrosoftPurviewInformationProtection\", \"Microsoft Purview Information Protection\", \"https://purview.microsoft.com/\", false, 24h,\n    \"OfficeActivity\", \"Microsoft Purview Audit / Microsoft 365 workloads\", \"https://purview.microsoft.com/audit\", true, 6h,\n    \"EnrichedMicrosoft365AuditLogs\", \"Microsoft Purview Audit\", \"https://purview.microsoft.com/audit\", false, 6h,\n    \"NetworkAccessGenerativeAIInsights\", \"Microsoft Entra Global Secure Access (preview)\", \"https://entra.microsoft.com/\", false, 6h\n];\nlet observed =\n    union isfuzzy=true\n    (CopilotActivity | where TimeGenerated > ago(healthWindow) | project TableName=\"CopilotActivity\", TimeGenerated),\n    (SecurityAlert | where TimeGenerated > ago(healthWindow) | project TableName=\"SecurityAlert\", TimeGenerated),\n    (SecurityIncident | where TimeGenerated > ago(healthWindow) | project TableName=\"SecurityIncident\", TimeGenerated),\n    (SigninLogs | where TimeGenerated > ago(healthWindow) | project TableName=\"SigninLogs\", TimeGenerated),\n    (AADNonInteractiveUserSignInLogs | where TimeGenerated > ago(healthWindow) | project TableName=\"AADNonInteractiveUserSignInLogs\", TimeGenerated),\n    (AuditLogs | where TimeGenerated > ago(healthWindow) | project TableName=\"AuditLogs\", TimeGenerated),\n    (IdentityInfo | where TimeGenerated > ago(healthWindow) | project TableName=\"IdentityInfo\", TimeGenerated),\n    (CloudAppEvents | where TimeGenerated > ago(healthWindow) | project TableName=\"CloudAppEvents\", TimeGenerated),\n    (AlertInfo | where TimeGenerated > ago(healthWindow) | project TableName=\"AlertInfo\", TimeGenerated),\n    (AlertEvidence | where TimeGenerated > ago(healthWindow) | project TableName=\"AlertEvidence\", TimeGenerated),\n    (DeviceEvents | where TimeGenerated > ago(healthWindow) | project TableName=\"DeviceEvents\", TimeGenerated),\n    (IdentityLogonEvents | where TimeGenerated > ago(healthWindow) | project TableName=\"IdentityLogonEvents\", TimeGenerated),\n    (IdentityDirectoryEvents | where TimeGenerated > ago(healthWindow) | project TableName=\"IdentityDirectoryEvents\", TimeGenerated),\n    (IdentityQueryEvents | where TimeGenerated > ago(healthWindow) | project TableName=\"IdentityQueryEvents\", TimeGenerated),\n    (MicrosoftPurviewInformationProtection | where TimeGenerated > ago(healthWindow) | project TableName=\"MicrosoftPurviewInformationProtection\", TimeGenerated),\n    (OfficeActivity | where TimeGenerated > ago(healthWindow) | project TableName=\"OfficeActivity\", TimeGenerated),\n    (EnrichedMicrosoft365AuditLogs | where TimeGenerated > ago(healthWindow) | project TableName=\"EnrichedMicrosoft365AuditLogs\", TimeGenerated),\n    (NetworkAccessGenerativeAIInsights | where TimeGenerated > ago(healthWindow) | project TableName=\"NetworkAccessGenerativeAIInsights\", TimeGenerated),\n    (datatable(TableName:string, TimeGenerated:datetime)[])\n    | summarize LastEventTime=max(TimeGenerated), EventCount=count() by TableName;\nexpected\n| join kind=leftouter observed on TableName\n| extend\n    Age = now() - LastEventTime,\n    Status = case(\n        isnull(LastEventTime), \"UnavailableOrSilent\",\n        Age > ExpectedFreshness, \"Stale\",\n        \"Healthy\"),\n    GovernanceFunction = \"M365Gov_DataHealth\"\n| project-away TableName1"
                 },
                 {
                   "id": "M365Gov_NativeAlerts",
                   "resourceName": "M365Gov_NativeAlerts",
                   "displayName": "M365 Governance Native Alerts",
-                  "version": "0.1.1",
+                  "version": "0.1.2",
                   "source": "src/functions/M365Gov_NativeAlerts.kql",
                   "metadata": "src/functions/M365Gov_NativeAlerts.metadata.json",
-                  "sha256": "5cb8afe7ff77780fe3c05877e565fb1d2c1453666c7e2da9c74dd6b77e5de86d",
+                  "sha256": "3febedc6b3c366f4d3297bf468b250e294de0c618aba998022d8a6f02cdf0354",
                   "controlOwner": "Originating Microsoft security or compliance product",
                   "category": "M365 Copilot Governance",
                   "functionAlias": "M365Gov_NativeAlerts",
                   "functionParameters": "starttime:datetime = datetime(null), endtime:datetime = datetime(null)",
-                  "query": "let alertLookback = iff(isnull(starttime), ago(14d), starttime);\r\nlet alertEnd = iff(isnull(endtime), now(), endtime);\r\nunion isfuzzy=true\r\n(\r\n    SecurityAlert\r\n    | where TimeGenerated between (alertLookback .. alertEnd)\r\n    | project\r\n        TimeGenerated,\r\n        IngestionTime = ingestion_time(),\r\n        SourceTable = \"SecurityAlert\",\r\n        NativeRecordId = tostring(SystemAlertId),\r\n        NativeIncidentNumber = \"\",\r\n        AlertName = tostring(AlertName),\r\n        AlertSeverity = tostring(AlertSeverity),\r\n        AlertStatus = tostring(AlertStatus),\r\n        ProductName = tostring(ProductName),\r\n        ProviderName = tostring(ProviderName),\r\n        AuthoritativeControlOwner = case(\r\n            ProductName has \"Entra\" or ProviderName has \"Entra\", \"Microsoft Entra\",\r\n            ProductName has \"Purview\" or ProviderName has \"Purview\", \"Microsoft Purview\",\r\n            ProductName has \"Defender\" or ProviderName has \"Defender\", \"Microsoft Defender\",\r\n            \"Source product represented by the native alert\"),\r\n        ActorIdentifier = tostring(CompromisedEntity),\r\n        TenantIdentifier = tostring(TenantId),\r\n        NativePortalRoute = \"https://security.microsoft.com/alerts\",\r\n        SourceDescription = tostring(Description)\r\n),\r\n(\r\n    SecurityIncident\r\n    | where TimeGenerated between (alertLookback .. alertEnd)\r\n    | project\r\n        TimeGenerated,\r\n        IngestionTime = ingestion_time(),\r\n        SourceTable = \"SecurityIncident\",\r\n        NativeRecordId = tostring(IncidentName),\r\n        NativeIncidentNumber = tostring(IncidentNumber),\r\n        AlertName = tostring(Title),\r\n        AlertSeverity = tostring(Severity),\r\n        AlertStatus = tostring(Status),\r\n        ProductName = \"Microsoft Sentinel incident\",\r\n        ProviderName = tostring(ProviderName),\r\n        AuthoritativeControlOwner = \"Microsoft Sentinel (incident container); originating products retain control ownership\",\r\n        ActorIdentifier = \"\",\r\n        TenantIdentifier = tostring(TenantId),\r\n        NativePortalRoute = \"https://portal.azure.com/#view/Microsoft_Azure_Security_Insights/WorkspaceSelectorBlade\",\r\n        SourceDescription = tostring(Description)\r\n)\r\n| where isnotempty(NativeRecordId)\r\n| extend GovernanceFunction = \"M365Gov_NativeAlerts\""
+                  "query": "let alertLookback = iff(isnull(starttime), ago(14d), starttime);\nlet alertEnd = iff(isnull(endtime), now(), endtime);\nunion isfuzzy=true\n(\n    SecurityAlert\n    | where TimeGenerated between (alertLookback .. alertEnd)\n    | project\n        TimeGenerated,\n        IngestionTime = ingestion_time(),\n        SourceTable = \"SecurityAlert\",\n        NativeRecordId = tostring(SystemAlertId),\n        NativeIncidentNumber = \"\",\n        AlertName = tostring(AlertName),\n        AlertSeverity = tostring(AlertSeverity),\n        AlertStatus = tostring(AlertStatus),\n        ProductName = tostring(ProductName),\n        ProviderName = tostring(ProviderName),\n        AuthoritativeControlOwner = case(\n            ProductName has \"Entra\" or ProviderName has \"Entra\", \"Microsoft Entra\",\n            ProductName has \"Purview\" or ProviderName has \"Purview\", \"Microsoft Purview\",\n            ProductName has \"Defender\" or ProviderName has \"Defender\", \"Microsoft Defender\",\n            \"Source product represented by the native alert\"),\n        ActorIdentifier = tostring(CompromisedEntity),\n        TenantIdentifier = tostring(TenantId),\n        NativePortalRoute = \"https://security.microsoft.com/alerts\",\n        SourceDescription = tostring(Description)\n),\n(\n    SecurityIncident\n    | where TimeGenerated between (alertLookback .. alertEnd)\n    | project\n        TimeGenerated,\n        IngestionTime = ingestion_time(),\n        SourceTable = \"SecurityIncident\",\n        NativeRecordId = tostring(IncidentName),\n        NativeIncidentNumber = tostring(IncidentNumber),\n        AlertName = tostring(Title),\n        AlertSeverity = tostring(Severity),\n        AlertStatus = tostring(Status),\n        ProductName = \"Microsoft Sentinel incident\",\n        ProviderName = tostring(ProviderName),\n        AuthoritativeControlOwner = \"Microsoft Sentinel (incident container); originating products retain control ownership\",\n        ActorIdentifier = \"\",\n        TenantIdentifier = tostring(TenantId),\n        NativePortalRoute = \"https://portal.azure.com/#view/Microsoft_Azure_Security_Insights/WorkspaceSelectorBlade\",\n        SourceDescription = tostring(Description)\n)\n| where isnotempty(NativeRecordId)\n| extend GovernanceFunction = \"M365Gov_NativeAlerts\""
                 }
               ],
               "analytics": [
@@ -262,15 +262,15 @@
                   "id": "M365Gov-CrossProduct-AlertCorrelation",
                   "resourceName": "M365Gov-CrossProduct-AlertCorrelation",
                   "displayName": "M365 Governance - Cross-Product Native Alert Correlation",
-                  "version": "0.1.1",
+                  "version": "0.1.2",
                   "source": "src/analytics/M365Gov-CrossProduct-AlertCorrelation.kql",
                   "metadata": "src/analytics/M365Gov-CrossProduct-AlertCorrelation.metadata.json",
-                  "sha256": "bb32ec67639078397aeac5e4c398021a68f2b4b8554d1cd0aba1ab108c19849c",
+                  "sha256": "249a407e9ac2dfda0efd258c69272d1afbccc09b7d6889f0207d300569643740",
                   "controlOwner": "Each originating Microsoft alert provider",
                   "description": "Correlation requires the same non-empty CompromisedEntity representation. A shared entity does not prove a common root cause. The rule does not reproduce native alert logic or inspect prompt content.",
                   "enabledByDefault": false,
                   "severity": "Medium",
-                  "query": "let correlationWindow = 1h;\r\nlet alerts =\r\n    M365Gov_NativeAlerts(ago(1d), now())\r\n    | where SourceTable == \"SecurityAlert\"\r\n    | where isnotempty(ActorIdentifier)\r\n    | project\r\n        TimeGenerated,\r\n        NativeRecordId,\r\n        AlertName,\r\n        AlertSeverity,\r\n        ProductName,\r\n        ProviderName,\r\n        AuthoritativeControlOwner,\r\n        ActorIdentifier,\r\n        NativePortalRoute;\r\nalerts\r\n| join kind=inner alerts on ActorIdentifier\r\n| where NativeRecordId < NativeRecordId1\r\n| where abs(datetime_diff(\"minute\", TimeGenerated, TimeGenerated1)) <= toint(correlationWindow / 1m)\r\n| where ProductName != ProductName1 or ProviderName != ProviderName1\r\n| extend\r\n    AlertTitle = \"Cross-product native alert correlation\",\r\n    AlertDescription = \"Two existing native alerts from different product or provider contexts reference the same compromised entity within one hour. Investigate in each authoritative native portal.\",\r\n    AccountCustomEntity = ActorIdentifier\r\n| project\r\n    TimeGenerated=max_of(TimeGenerated, TimeGenerated1),\r\n    AlertTitle,\r\n    AlertDescription,\r\n    ActorIdentifier,\r\n    FirstAlertId=NativeRecordId,\r\n    FirstAlertName=AlertName,\r\n    FirstSeverity=AlertSeverity,\r\n    FirstProduct=ProductName,\r\n    FirstProvider=ProviderName,\r\n    FirstOwner=AuthoritativeControlOwner,\r\n    FirstPortal=NativePortalRoute,\r\n    SecondAlertId=NativeRecordId1,\r\n    SecondAlertName=AlertName1,\r\n    SecondSeverity=AlertSeverity1,\r\n    SecondProduct=ProductName1,\r\n    SecondProvider=ProviderName1,\r\n    SecondOwner=AuthoritativeControlOwner1,\r\n    SecondPortal=NativePortalRoute1,\r\n    AccountCustomEntity",
+                  "query": "let correlationWindow = 1h;\nlet alerts =\n    M365Gov_NativeAlerts(ago(1d), now())\n    | where SourceTable == \"SecurityAlert\"\n    | where isnotempty(ActorIdentifier)\n    | project\n        TimeGenerated,\n        NativeRecordId,\n        AlertName,\n        AlertSeverity,\n        ProductName,\n        ProviderName,\n        AuthoritativeControlOwner,\n        ActorIdentifier,\n        NativePortalRoute;\nalerts\n| join kind=inner alerts on ActorIdentifier\n| where NativeRecordId < NativeRecordId1\n| where abs(datetime_diff(\"minute\", TimeGenerated, TimeGenerated1)) <= toint(correlationWindow / 1m)\n| where ProductName != ProductName1 or ProviderName != ProviderName1\n| extend\n    AlertTitle = \"Cross-product native alert correlation\",\n    AlertDescription = \"Two existing native alerts from different product or provider contexts reference the same compromised entity within one hour. Investigate in each authoritative native portal.\",\n    AccountCustomEntity = ActorIdentifier\n| project\n    TimeGenerated=max_of(TimeGenerated, TimeGenerated1),\n    AlertTitle,\n    AlertDescription,\n    ActorIdentifier,\n    FirstAlertId=NativeRecordId,\n    FirstAlertName=AlertName,\n    FirstSeverity=AlertSeverity,\n    FirstProduct=ProductName,\n    FirstProvider=ProviderName,\n    FirstOwner=AuthoritativeControlOwner,\n    FirstPortal=NativePortalRoute,\n    SecondAlertId=NativeRecordId1,\n    SecondAlertName=AlertName1,\n    SecondSeverity=AlertSeverity1,\n    SecondProduct=ProductName1,\n    SecondProvider=ProviderName1,\n    SecondOwner=AuthoritativeControlOwner1,\n    SecondPortal=NativePortalRoute1,\n    AccountCustomEntity",
                   "queryFrequency": "PT15M",
                   "queryPeriod": "P1D",
                   "triggerOperator": "GreaterThan",
@@ -310,15 +310,15 @@
                   "id": "M365Gov-DataSource-Silence",
                   "resourceName": "M365Gov-DataSource-Silence",
                   "displayName": "M365 Governance - Required Data Source Silence",
-                  "version": "0.1.1",
+                  "version": "0.1.2",
                   "source": "src/analytics/M365Gov-DataSource-Silence.kql",
                   "metadata": "src/analytics/M365Gov-DataSource-Silence.metadata.json",
-                  "sha256": "b0d62b5eea67c279785acdde6556354aa100a399256b4f2e2fd4bb386889102b",
+                  "sha256": "bec11705d21337cfa355985b83227cbd99707642ad13dea5acdb1b924d108f88",
                   "controlOwner": "Microsoft Sentinel operations for connector health; source products own telemetry",
                   "description": "UnavailableOrSilent can mean absent, unauthorized, unlicensed, disabled, or no events. A stale source may be normal for a quiet tenant. This analytic reports health only and does not infer misconduct or risk.",
                   "enabledByDefault": false,
                   "severity": "Low",
-                  "query": "M365Gov_DataHealth(24h)\r\n| where RequiredForMvp\r\n| where Status in (\"UnavailableOrSilent\", \"Stale\")\r\n| extend\r\n    AlertTitle = strcat(\"M365 governance data source \", Status, \": \", TableName),\r\n    AlertDescription = strcat(\r\n        \"The required native source is \", Status,\r\n        \". This is an operational-health signal, not evidence that no security, compliance, identity, or AI activity occurred. Validate the connector, licensing, permissions, and native portal.\"),\r\n    SourceCustomEntity = TableName\r\n| project\r\n    TimeGenerated=now(),\r\n    AlertTitle,\r\n    AlertDescription,\r\n    TableName,\r\n    Status,\r\n    LastEventTime,\r\n    Age,\r\n    ExpectedFreshness,\r\n    EventCount,\r\n    AuthoritativeControlOwner,\r\n    NativePortalRoute,\r\n    SourceCustomEntity",
+                  "query": "M365Gov_DataHealth(24h)\n| where RequiredForMvp\n| where Status in (\"UnavailableOrSilent\", \"Stale\")\n| extend\n    AlertTitle = strcat(\"M365 governance data source \", Status, \": \", TableName),\n    AlertDescription = strcat(\n        \"The required native source is \", Status,\n        \". This is an operational-health signal, not evidence that no security, compliance, identity, or AI activity occurred. Validate the connector, licensing, permissions, and native portal.\"),\n    SourceCustomEntity = TableName\n| project\n    TimeGenerated=now(),\n    AlertTitle,\n    AlertDescription,\n    TableName,\n    Status,\n    LastEventTime,\n    Age,\n    ExpectedFreshness,\n    EventCount,\n    AuthoritativeControlOwner,\n    NativePortalRoute,\n    SourceCustomEntity",
                   "queryFrequency": "PT1H",
                   "queryPeriod": "P1D",
                   "triggerOperator": "GreaterThan",
@@ -348,15 +348,15 @@
                   "id": "M365Gov-NativeAlert-RiskyIdentity",
                   "resourceName": "M365Gov-NativeAlert-RiskyIdentity",
                   "displayName": "M365 Governance - Native Alert and Risky Identity Correlation",
-                  "version": "0.1.1",
+                  "version": "0.1.2",
                   "source": "src/analytics/M365Gov-NativeAlert-RiskyIdentity.kql",
                   "metadata": "src/analytics/M365Gov-NativeAlert-RiskyIdentity.metadata.json",
-                  "sha256": "bc7c8b617472a6a732da8b1ce7b2b6d87e86c79545819644f48e50ba19acec3c",
+                  "sha256": "9b87862a938f55a767ee6f3be73a698544b47dea008cdab4a3eeda4a8f9972d7",
                   "controlOwner": "Microsoft Entra ID Protection",
                   "description": "Matching requires a native alert CompromisedEntity equal to ASIM ActorUsername. Different identity formats or missing entities prevent correlation. AI activity or usage volume is never promoted to identity risk.",
                   "enabledByDefault": false,
                   "severity": "Medium",
-                  "query": "let correlationWindow = 6h;\r\nlet nativeRiskAlerts =\r\n    M365Gov_NativeAlerts(ago(1d), now())\r\n    | where ProductName has_any (\"Entra\", \"Identity Protection\")\r\n        or ProviderName has_any (\"Entra\", \"Identity Protection\")\r\n        or AlertName has_any (\"risky user\", \"risky sign-in\", \"identity risk\")\r\n    | where isnotempty(ActorIdentifier)\r\n    | project\r\n        RiskAlertTime=TimeGenerated,\r\n        RiskAlertId=NativeRecordId,\r\n        RiskAlertName=AlertName,\r\n        RiskAlertSeverity=AlertSeverity,\r\n        ActorIdentifier,\r\n        ProductName,\r\n        ProviderName,\r\n        NativePortalRoute;\r\nlet aiActivity =\r\n    M365Gov_AiActivity(ago(1d), now())\r\n    | where isnotempty(ActorUsername)\r\n    | project\r\n        AiActivityTime=TimeGenerated,\r\n        ActorUsername,\r\n        SrcAgentName,\r\n        TargetAgentName,\r\n        ActingAppName,\r\n        AiEventType=EventType,\r\n        AiEventUid=EventUid;\r\nnativeRiskAlerts\r\n| join kind=innerunique aiActivity on $left.ActorIdentifier == $right.ActorUsername\r\n| where AiActivityTime between (RiskAlertTime - correlationWindow .. RiskAlertTime + correlationWindow)\r\n| extend\r\n    AlertTitle = \"Native identity-risk alert correlated with AI activity\",\r\n    AlertDescription = strcat(\"A native Microsoft Entra identity-risk alert was observed near normalized AI activity. Validate and remediate identity risk in Microsoft Entra; use Sentinel only for correlation.\"),\r\n    AccountCustomEntity = ActorUsername\r\n| project\r\n    TimeGenerated=max_of(RiskAlertTime, AiActivityTime),\r\n    AlertTitle,\r\n    AlertDescription,\r\n    RiskAlertId,\r\n    RiskAlertName,\r\n    RiskAlertSeverity,\r\n    ProductName,\r\n    ProviderName,\r\n    ActorUsername,\r\n    SrcAgentName,\r\n    TargetAgentName,\r\n    ActingAppName,\r\n    AiEventType,\r\n    AiEventUid,\r\n    NativePortalRoute,\r\n    AccountCustomEntity",
+                  "query": "let correlationWindow = 6h;\nlet nativeRiskAlerts =\n    M365Gov_NativeAlerts(ago(1d), now())\n    | where ProductName has_any (\"Entra\", \"Identity Protection\")\n        or ProviderName has_any (\"Entra\", \"Identity Protection\")\n        or AlertName has_any (\"risky user\", \"risky sign-in\", \"identity risk\")\n    | where isnotempty(ActorIdentifier)\n    | project\n        RiskAlertTime=TimeGenerated,\n        RiskAlertId=NativeRecordId,\n        RiskAlertName=AlertName,\n        RiskAlertSeverity=AlertSeverity,\n        ActorIdentifier,\n        ProductName,\n        ProviderName,\n        NativePortalRoute;\nlet aiActivity =\n    M365Gov_AiActivity(ago(1d), now())\n    | where isnotempty(ActorUsername)\n    | project\n        AiActivityTime=TimeGenerated,\n        ActorUsername,\n        SrcAgentName,\n        TargetAgentName,\n        ActingAppName,\n        AiEventType=EventType,\n        AiEventUid=EventUid;\nnativeRiskAlerts\n| join kind=innerunique aiActivity on $left.ActorIdentifier == $right.ActorUsername\n| where AiActivityTime between (RiskAlertTime - correlationWindow .. RiskAlertTime + correlationWindow)\n| extend\n    AlertTitle = \"Native identity-risk alert correlated with AI activity\",\n    AlertDescription = strcat(\"A native Microsoft Entra identity-risk alert was observed near normalized AI activity. Validate and remediate identity risk in Microsoft Entra; use Sentinel only for correlation.\"),\n    AccountCustomEntity = ActorUsername\n| project\n    TimeGenerated=max_of(RiskAlertTime, AiActivityTime),\n    AlertTitle,\n    AlertDescription,\n    RiskAlertId,\n    RiskAlertName,\n    RiskAlertSeverity,\n    ProductName,\n    ProviderName,\n    ActorUsername,\n    SrcAgentName,\n    TargetAgentName,\n    ActingAppName,\n    AiEventType,\n    AiEventUid,\n    NativePortalRoute,\n    AccountCustomEntity",
                   "queryFrequency": "PT15M",
                   "queryPeriod": "P1D",
                   "triggerOperator": "GreaterThan",
@@ -398,10 +398,10 @@
                   "id": "m365gov-coverage-and-gaps",
                   "resourceName": "m365gov-coverage-and-gaps",
                   "displayName": "M365 Governance Coverage and Gaps",
-                  "version": "0.1.1",
+                  "version": "0.1.2",
                   "source": "src/workbooks/m365gov-coverage-and-gaps.workbook.json",
                   "metadata": "src/workbooks/m365gov-coverage-and-gaps.metadata.json",
-                  "sha256": "99a1a49474ee64c17923ff9eeaf3e6ce31c6be17af15c722c800110571d36c1a",
+                  "sha256": "30ff3e2f56f7fd393d3a1c436464bc19492e7f869f6260dfe659a9777973277d",
                   "controlOwner": "Multiple Microsoft native control planes",
                   "description": "Sentinel visibility is not equivalent to tenant licensing, policy deployment, or native control effectiveness. Preview and optional sources can change independently of this workbook.",
                   "serializedData": "{\"version\":\"Notebook/1.0\",\"items\":[{\"type\":1,\"content\":{\"json\":\"# Coverage and Gaps\\n\\nThis view distinguishes required MVP sources from optional or preview coverage. Native services remain authoritative even when their telemetry is unavailable in Sentinel. Optional custom interaction and usage integrations are not part of the default MVP.\"},\"name\":\"coverageNotice\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"M365Gov_DataHealth(24h)\\n| extend CoverageClass=iff(RequiredForMvp, \\\"MVP\\\", \\\"Optional or conditional\\\")\\n| summarize Sources=count(), Healthy=countif(Status == \\\"Healthy\\\"), Gaps=countif(Status != \\\"Healthy\\\") by CoverageClass\",\"size\":1,\"title\":\"MVP and optional coverage\",\"timeContext\":{\"durationMs\":86400000},\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"barchart\"},\"name\":\"coverageSummary\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"M365Gov_DataHealth(24h)\\n| where Status != \\\"Healthy\\\"\\n| extend CoverageClass=iff(RequiredForMvp, \\\"MVP\\\", \\\"Optional or conditional\\\")\\n| project CoverageClass, TableName, Status, LastEventTime, ExpectedFreshness, AuthoritativeControlOwner, NativePortalRoute\\n| order by CoverageClass asc, TableName asc\",\"size\":0,\"title\":\"Documented gaps and native owners\",\"timeContext\":{\"durationMs\":86400000},\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"table\"},\"name\":\"gapDetails\"}],\"isLocked\":false,\"fallbackResourceIds\":[\"Azure Monitor\"]}"
@@ -410,10 +410,10 @@
                   "id": "m365gov-data-health",
                   "resourceName": "m365gov-data-health",
                   "displayName": "M365 Governance Data Health",
-                  "version": "0.1.1",
+                  "version": "0.1.2",
                   "source": "src/workbooks/m365gov-data-health.workbook.json",
                   "metadata": "src/workbooks/m365gov-data-health.metadata.json",
-                  "sha256": "8ccc3646b09abbec45d6fc64097915b4b69324c34d9cb0d519645d0b21754c6f",
+                  "sha256": "c650a29c51cb56440ba369687180e30ce1f7bf9b8e84bb5a27619ba9a2b92005",
                   "controlOwner": "Microsoft Sentinel operations for ingestion health; source products own telemetry",
                   "description": "Silence does not distinguish an absent table from a legitimately quiet source without operator validation. Fresh ingestion does not prove semantic completeness.",
                   "serializedData": "{\"version\":\"Notebook/1.0\",\"items\":[{\"type\":1,\"content\":{\"json\":\"# Governance Data Health\\n\\nThis workbook reports ingestion freshness and silence. `UnavailableOrSilent` can mean absent, unlicensed, unauthorized, disabled, or simply no events. Validate each source in its native portal and connector configuration.\"},\"name\":\"healthNotice\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"M365Gov_DataHealth(24h)\\n| summarize Count=count() by Status\",\"size\":1,\"title\":\"Source status\",\"timeContext\":{\"durationMs\":86400000},\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"piechart\"},\"name\":\"healthStatus\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"M365Gov_DataHealth(24h)\\n| project TableName, Status, LastEventTime, Age, EventCount, ExpectedFreshness, RequiredForMvp, AuthoritativeControlOwner, NativePortalRoute\\n| order by RequiredForMvp desc, Status asc, TableName asc\",\"size\":0,\"title\":\"Freshness and remediation routing\",\"timeContext\":{\"durationMs\":86400000},\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"table\"},\"name\":\"healthDetails\"}],\"isLocked\":false,\"fallbackResourceIds\":[\"Azure Monitor\"]}"
@@ -422,10 +422,10 @@
                   "id": "m365gov-governance-overview",
                   "resourceName": "m365gov-governance-overview",
                   "displayName": "M365 Copilot Governance Overview",
-                  "version": "0.1.1",
+                  "version": "0.1.2",
                   "source": "src/workbooks/m365gov-governance-overview.workbook.json",
                   "metadata": "src/workbooks/m365gov-governance-overview.metadata.json",
-                  "sha256": "d6dfce719778932acc5ddce4ea8159cf993229758f774346ebb2d8b253e42942",
+                  "sha256": "0a6c27021a7daf66333a0882ac7a6adcb1448a656f94ef0592b22f62b3a7df9a",
                   "controlOwner": "Multiple Microsoft native control planes",
                   "description": "Coverage is based on Sentinel-visible sources and does not represent every licensed or configured native control. No prompt, response, or interaction content is displayed.",
                   "serializedData": "{\"version\":\"Notebook/1.0\",\"items\":[{\"type\":1,\"content\":{\"json\":\"# Microsoft 365 Copilot Governance Overview\\n\\nMicrosoft Sentinel provides correlation, visualization, investigation routing, and operational health. Microsoft Purview, Defender, Entra, Microsoft 365 reporting, and Global Secure Access remain authoritative. Missing Sentinel data does not mean that no risk or compliance activity exists.\"},\"name\":\"governanceNotice\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"M365Gov_DataHealth(24h)\\n| summarize Sources=count(), Healthy=countif(Status == \\\"Healthy\\\"), Stale=countif(Status == \\\"Stale\\\"), UnavailableOrSilent=countif(Status == \\\"UnavailableOrSilent\\\")\",\"size\":1,\"title\":\"Native source coverage and health\",\"timeContext\":{\"durationMs\":86400000},\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"tiles\"},\"name\":\"sourceSummary\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"M365Gov_DataHealth(24h)\\n| project TableName, Status, LastEventTime, ExpectedFreshness, AuthoritativeControlOwner, NativePortalRoute, RequiredForMvp\\n| order by RequiredForMvp desc, Status asc, TableName asc\",\"size\":0,\"title\":\"Control ownership and native routing\",\"timeContext\":{\"durationMs\":86400000},\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"table\"},\"name\":\"ownershipTable\"}],\"isLocked\":false,\"fallbackResourceIds\":[\"Azure Monitor\"]}"
@@ -434,10 +434,10 @@
                   "id": "m365gov-native-alert-correlation",
                   "resourceName": "m365gov-native-alert-correlation",
                   "displayName": "M365 Governance Native Alert Correlation",
-                  "version": "0.1.1",
+                  "version": "0.1.2",
                   "source": "src/workbooks/m365gov-native-alert-correlation.workbook.json",
                   "metadata": "src/workbooks/m365gov-native-alert-correlation.metadata.json",
-                  "sha256": "dec006417810a16e1c978d3bf1bddd327299eceb8e9e87e64cbcc97832dbebea",
+                  "sha256": "51e3a2a918007d2b607995c1672577e55dc18f76179aac69bedba690ce73c245",
                   "controlOwner": "Originating Microsoft native alert providers",
                   "description": "Entity correlation is available only when native alerts provide CompromisedEntity. A shared entity value does not prove a common root cause.",
                   "serializedData": "{\"version\":\"Notebook/1.0\",\"items\":[{\"type\":1,\"content\":{\"json\":\"# Native Alert Correlation\\n\\nThis workbook displays existing native alerts and cross-product context. Resolve detections in the authoritative Microsoft portal. Sentinel does not reproduce Purview, Defender, or Entra detection logic.\\n\\n> **Identity privacy:** Raw actor identifiers are sensitive. Limit access to personnel with a need to know, and use masked or pseudonymized reporting views when direct identity is not necessary.\"},\"name\":\"correlationNotice\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"M365Gov_NativeAlerts(ago(24h), now())\\n| summarize AlertCount=count(), Products=dcount(ProductName), Providers=dcount(ProviderName) by ActorIdentifier\\n| where isnotempty(ActorIdentifier)\\n| order by AlertCount desc\",\"size\":0,\"title\":\"Entities represented by native alerts\",\"timeContext\":{\"durationMs\":86400000},\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"table\"},\"name\":\"entityCorrelation\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"M365Gov_NativeAlerts(ago(24h), now())\\n| project TimeGenerated, AlertName, AlertSeverity, AlertStatus, ActorIdentifier, ProductName, ProviderName, AuthoritativeControlOwner, NativePortalRoute\\n| order by TimeGenerated desc\",\"size\":0,\"title\":\"Native alert investigation routing\",\"timeContext\":{\"durationMs\":86400000},\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"table\"},\"name\":\"nativeAlertTable\"}],\"isLocked\":false,\"fallbackResourceIds\":[\"Azure Monitor\"]}"
@@ -473,8 +473,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.44.1.10279",
-                      "templateHash": "2994971287742653438"
+                      "version": "0.46.1.21595",
+                      "templateHash": "13219878269098733779"
                     }
                   },
                   "parameters": {
@@ -576,8 +576,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.44.1.10279",
-                      "templateHash": "2155822813363905903"
+                      "version": "0.46.1.21595",
+                      "templateHash": "469662951745580862"
                     }
                   },
                   "parameters": {
@@ -695,8 +695,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.44.1.10279",
-                      "templateHash": "8303354504092687448"
+                      "version": "0.46.1.21595",
+                      "templateHash": "16362427581749751210"
                     }
                   },
                   "parameters": {

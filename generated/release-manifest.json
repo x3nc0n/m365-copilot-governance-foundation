@@ -1,27 +1,27 @@
 {
   "schemaVersion": "1.0.0",
-  "solutionVersion": "0.1.1",
-  "contentManifestSha256": "0fcae10b68e0bee48520408ab4f49df3d8fd7c7e8180d9eb3692df8fb95283d7",
+  "solutionVersion": "0.1.2",
+  "contentManifestSha256": "126923391a82a5c237b15195e4ca2ba7208568d0a19dd005090e7e49ae21282b",
   "artifacts": [
     {
       "path": "existing-workspace.createUiDefinition.json",
-      "sha256": "8e9886b09418fd46728b8ccc72658d913a4f1baf0c3525465338b772800a341b",
-      "bytes": 3458
+      "sha256": "d3b215ee9a628f3b4498b7a0390c86d274c9d35d41944b89c78f3705e4612a2a",
+      "bytes": 3366
     },
     {
       "path": "existing-workspace.json",
-      "sha256": "1eae2e7652c0e46f543abb26fc51b368160c72eafab98da085b0c4c747661260",
-      "bytes": 61902
+      "sha256": "82d23b7f75aef882eaa47eaf198cb067d14219e6086defbe7f6a2b1d51ed80a6",
+      "bytes": 61335
     },
     {
       "path": "greenfield.createUiDefinition.json",
-      "sha256": "9edb5d011ac46f8376f9d2f682466e8db532997f2695e6de452ab88ac7fc9c7e",
-      "bytes": 4392
+      "sha256": "c5a4152e70c83a496e5261713dcd23cd693ce6247175bd8b485cca289fa3ce92",
+      "bytes": 4270
     },
     {
       "path": "greenfield.json",
-      "sha256": "e245d39dc5b90575e19da89cb5903895f06d42decd8ce9d0d85f54433cf172af",
-      "bytes": 68061
+      "sha256": "38037b4a30209dafa684552c3fe4a57e5f013258f459938cba76073d0752a090",
+      "bytes": 67493
     }
   ]
 }
