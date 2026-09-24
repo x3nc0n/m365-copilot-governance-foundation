@@ -1,8 +1,8 @@
 # Azure Deployment Plan
 
 > **Status:** Validated
-> **Current phase:** The `v0.1.3` onboarding-state hotfix passed offline validation plus Azure `validate` and `what-if` against the workspace that exposed the defect
-> **Next status:** Release candidate after PR promotion, immutable tag publication, and tagged asset/CORS verification
+> **Current phase:** The `v0.1.4` Sentinel content API payload hotfix passed deterministic builds, static analysis, and non-mutating Azure validation
+> **Next status:** Manual existing-workspace deployment retry against the workspace that exposed the service-side defects
 > **Approval:** The user reported the live deployment failure on September 23, 2026 and requested correction. The change remains limited to repository artifacts until validation and release promotion complete.
 
 **Generated:** 2026-09-22
@@ -925,5 +925,53 @@ The selected workspace is Sentinel-enabled, but its `Microsoft.SecurityInsights/
 | Deterministic release assets | Passed | All six release-asset hashes remained identical across the second canonical build |
 | Azure deployment validation | Passed | `az deployment group validate` succeeded against resource group `sf-sharedsvcs-sentinel-secops` and workspace `sf-law-westus2` with the original failed deployment flags |
 | Azure what-if | Passed | `az deployment group what-if --result-format ResourceIdOnly` succeeded against the same target |
-| Tagged raw URL/CORS checks | Pending | `v0.1.3` is not published yet |
-| Live create retry | Pending | Retry after the immutable `v0.1.3` release is published |
+| Tagged raw URL/CORS checks | Passed | Immutable `v0.1.3` assets were published and verified |
+| Live create retry | Partial | The onboarding-state gate passed; deployment then exposed the saved-search and analytic-rule payload defects addressed in Section 20 |
+
+## 20. Sentinel content API payload hotfix
+
+The next live deployment passed the onboarding-state gate and reached Sentinel content creation, exposing two independent API-contract defects:
+
+1. `Microsoft.OperationalInsights/workspaces/savedSearches.properties.version` received the solution semantic version string (`0.1.3`), but the resource API requires an integer.
+2. The data-source-silence analytic emitted `entityMappings: []`, but Sentinel accepts `entityMappings` only when the property contains between one and five mappings.
+
+### Approved correction
+
+1. Separate solution/content semantic versioning from the saved-search resource schema version.
+2. Emit integer `1` for every saved-search `properties.version`; retain the semantic solution version in manifests, tags, and solution metadata.
+3. Keep empty entity mappings valid in source metadata for analytics where no standard Sentinel entity is semantically correct.
+4. Conditionally omit `entityMappings` from the scheduled alert-rule payload when the generated mapping array is empty.
+5. Continue emitting populated mappings for the identity/correlation analytics.
+6. Add compiled-ARM regressions that assert:
+   - all saved-search resource versions are integers;
+   - no saved-search uses the solution semantic version as the API version field;
+   - analytic rules with mappings emit one to five mappings;
+   - the data-source-silence rule omits `entityMappings`.
+7. Regenerate deterministic ARM templates, release assets, manifests, and checksums.
+8. Publish a new immutable patch release; do not rewrite `v0.1.3`.
+
+### Validation plan
+
+- Run targeted manifest and ARM/Bicep contract tests.
+- Run both Bicep lints and parameter compilations.
+- Run the canonical CI build twice and compare all release-asset hashes.
+- Run PSScriptAnalyzer and JSON schema validation.
+- Run Azure `validate` and `what-if` where the reported subscription is accessible.
+- After tag publication, verify release checksums, raw JSON/CORS, and retry the full existing-workspace deployment.
+
+### Validation proof — 2026-09-24
+
+| Check | Result | Evidence |
+|---|---|---|
+| Saved-search payload | Passed | Both compiled templates serialize `Microsoft.OperationalInsights/workspaces/savedSearches.properties.version` as integer `1` |
+| Analytic entity mappings | Passed | Both compiled templates conditionally omit `entityMappings` for the one empty mapping array and preserve mappings for the other two analytics |
+| Canonical CI build | Passed twice | `pwsh -NoProfile -File .\build\Invoke-Build.ps1 -CI`; 55 tests passed, 0 failed |
+| Deterministic outputs | Passed | Nine release-critical generated and compiled files retained identical SHA-256 hashes across the second build |
+| JSON validation | Passed | 33 JSON files validated |
+| PowerShell analysis | Passed | Repository workflow paths (`powershell`, `scripts`, and `build`) produced zero PSScriptAnalyzer findings |
+| Bicep and parameters | Passed | Both entry points and both `.bicepparam` files compiled with pinned Bicep `0.46.1` |
+| Static RBAC review | Passed | No `Microsoft.Authorization/roleAssignments` resources or role-definition assignments are introduced |
+| Secret scan | Passed | No tracked credential/private-key patterns found |
+| Azure deployment validation | Passed with documented limitation | Greenfield `az deployment group validate` succeeded in `rg-octavepg-prod`; ARM warned that reference-dependent nested validation was short-circuited |
+| Azure what-if | Passed | Greenfield `what-if --result-format ResourceIdOnly` expanded four saved searches and three analytic rules and completed with status `Succeeded` |
+| Existing-workspace live retry | Pending manual test | The authenticated subscription exposes no Log Analytics workspace and differs from the reported failing subscription, so no deployment was created |

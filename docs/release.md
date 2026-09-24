@@ -19,9 +19,9 @@ Use Semantic Versioning. A breaking change includes incompatible parameter/outpu
 11. Test README release links and Deploy to Azure flows.
 12. Record validation evidence; do not perform a live deployment without separate authorization.
 
-## Version 0.1.3 release-candidate assets
+## Version 0.1.4 release-candidate assets
 
-The immutable `v0.1.1` tag points to the issue #7 UI changes, but its release workflow run failed before publishing assets. Version `v0.1.2` corrected deterministic cross-platform generation and published successfully, but its existing-workspace deployment assumes the optional onboarding-state property `customerManagedKey` exists. Version `v0.1.3` preserves the onboarding-state existence/readability gate without dereferencing optional properties. Do not move or replace earlier tags.
+The immutable `v0.1.1` tag points to the issue #7 UI changes, but its release workflow run failed before publishing assets. Version `v0.1.2` corrected deterministic cross-platform generation, and version `v0.1.3` corrected the onboarding-state gate. Version `v0.1.4` uses the integer saved-search resource version required by Log Analytics and omits empty optional Sentinel entity mappings. Do not move or replace earlier tags.
 
 Expected immutable assets:
 
@@ -37,10 +37,10 @@ checksums.sha256
 They are published under:
 
 ```text
-https://github.com/x3nc0n/m365-copilot-governance-foundation/releases/download/v0.1.3/<asset>
+https://github.com/x3nc0n/m365-copilot-governance-foundation/releases/download/v0.1.4/<asset>
 ```
 
-A git tag identifies a source revision, but it does not provide downloadable assets. A `/releases/download/<tag>/<asset>` URL requires both a GitHub Release associated with the tag and an uploaded asset with that exact name. The `v0.1.3` URLs remain unavailable until the tag-triggered workflow publishes all six assets listed above.
+A git tag identifies a source revision, but it does not provide downloadable assets. A `/releases/download/<tag>/<asset>` URL requires both a GitHub Release associated with the tag and an uploaded asset with that exact name. The `v0.1.4` URLs remain unavailable until the tag-triggered workflow publishes all six assets listed above.
 
 `generated/release-manifest.json` and `generated/checksums.sha256` use these flattened upload names rather than source-tree paths. The two portal definitions are intentionally renamed during packaging so they cannot collide.
 
@@ -51,7 +51,7 @@ Azure Portal uses immutable raw tagged files rather than GitHub Release download
 Run this from PowerShell without GitHub authentication. It checks all four portal files, requires the CORS header, and parses each response as JSON.
 
 ```powershell
-$tag = 'v0.1.3'
+$tag = 'v0.1.4'
 $baseUri = "https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/$tag/generated/release-assets"
 $assets = @(
   'greenfield.json'
@@ -83,7 +83,7 @@ The tag-triggered workflow at `.github/workflows/release.yml` is the canonical a
 Run this from PowerShell without GitHub authentication. It downloads every expected asset, parses every JSON asset, and verifies every payload covered by `checksums.sha256`. Do not consider the release complete unless the command succeeds.
 
 ```powershell
-$tag = 'v0.1.3'
+$tag = 'v0.1.4'
 $baseUri = "https://github.com/x3nc0n/m365-copilot-governance-foundation/releases/download/$tag"
 $assets = @(
   'greenfield.json'

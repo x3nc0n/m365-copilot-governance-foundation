@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.46.1.21595",
-      "templateHash": "16553162409447825604"
+      "templateHash": "14971210930940849975"
     }
   },
   "parameters": {
@@ -26,7 +26,7 @@
     },
     "solutionVersion": {
       "type": "string",
-      "defaultValue": "0.1.3",
+      "defaultValue": "0.1.4",
       "minLength": 1,
       "metadata": {
         "description": "Solution content version."
@@ -329,7 +329,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.46.1.21595",
-              "templateHash": "3299746107540084942"
+              "templateHash": "7499327729266139442"
             }
           },
           "parameters": {
@@ -391,13 +391,13 @@
           "variables": {
             "$fxv#0": {
               "schemaVersion": "1.0.0",
-              "solutionVersion": "0.1.3",
+              "solutionVersion": "0.1.4",
               "functions": [
                 {
                   "id": "M365Gov_AiActivity",
                   "resourceName": "M365Gov_AiActivity",
                   "displayName": "M365 Governance AI Activity",
-                  "version": "0.1.3",
+                  "version": "0.1.4",
                   "source": "src/functions/M365Gov_AiActivity.kql",
                   "metadata": "src/functions/M365Gov_AiActivity.metadata.json",
                   "sha256": "75fe86ad8f5e7a5b051c601dbf55e739886b7e0aa09eb43ba4d9592aeda90867",
@@ -411,7 +411,7 @@
                   "id": "M365Gov_AuthenticationEvents",
                   "resourceName": "M365Gov_AuthenticationEvents",
                   "displayName": "M365 Governance Authentication Events",
-                  "version": "0.1.3",
+                  "version": "0.1.4",
                   "source": "src/functions/M365Gov_AuthenticationEvents.kql",
                   "metadata": "src/functions/M365Gov_AuthenticationEvents.metadata.json",
                   "sha256": "5bfcfad8c4f63d5f76d60bb6f50f2e6a4dfb85cf9bedc3584e94b775dc72425d",
@@ -425,7 +425,7 @@
                   "id": "M365Gov_DataHealth",
                   "resourceName": "M365Gov_DataHealth",
                   "displayName": "M365 Governance Data Health",
-                  "version": "0.1.3",
+                  "version": "0.1.4",
                   "source": "src/functions/M365Gov_DataHealth.kql",
                   "metadata": "src/functions/M365Gov_DataHealth.metadata.json",
                   "sha256": "4bb0d7e001fa938c73e96a72c73b425d1e79919208659345ffd1441b7bac5940",
@@ -439,7 +439,7 @@
                   "id": "M365Gov_NativeAlerts",
                   "resourceName": "M365Gov_NativeAlerts",
                   "displayName": "M365 Governance Native Alerts",
-                  "version": "0.1.3",
+                  "version": "0.1.4",
                   "source": "src/functions/M365Gov_NativeAlerts.kql",
                   "metadata": "src/functions/M365Gov_NativeAlerts.metadata.json",
                   "sha256": "3febedc6b3c366f4d3297bf468b250e294de0c618aba998022d8a6f02cdf0354",
@@ -455,7 +455,7 @@
                   "id": "M365Gov-CrossProduct-AlertCorrelation",
                   "resourceName": "M365Gov-CrossProduct-AlertCorrelation",
                   "displayName": "M365 Governance - Cross-Product Native Alert Correlation",
-                  "version": "0.1.3",
+                  "version": "0.1.4",
                   "source": "src/analytics/M365Gov-CrossProduct-AlertCorrelation.kql",
                   "metadata": "src/analytics/M365Gov-CrossProduct-AlertCorrelation.metadata.json",
                   "sha256": "249a407e9ac2dfda0efd258c69272d1afbccc09b7d6889f0207d300569643740",
@@ -503,7 +503,7 @@
                   "id": "M365Gov-DataSource-Silence",
                   "resourceName": "M365Gov-DataSource-Silence",
                   "displayName": "M365 Governance - Required Data Source Silence",
-                  "version": "0.1.3",
+                  "version": "0.1.4",
                   "source": "src/analytics/M365Gov-DataSource-Silence.kql",
                   "metadata": "src/analytics/M365Gov-DataSource-Silence.metadata.json",
                   "sha256": "bec11705d21337cfa355985b83227cbd99707642ad13dea5acdb1b924d108f88",
@@ -541,7 +541,7 @@
                   "id": "M365Gov-NativeAlert-RiskyIdentity",
                   "resourceName": "M365Gov-NativeAlert-RiskyIdentity",
                   "displayName": "M365 Governance - Native Alert and Risky Identity Correlation",
-                  "version": "0.1.3",
+                  "version": "0.1.4",
                   "source": "src/analytics/M365Gov-NativeAlert-RiskyIdentity.kql",
                   "metadata": "src/analytics/M365Gov-NativeAlert-RiskyIdentity.metadata.json",
                   "sha256": "9b87862a938f55a767ee6f3be73a698544b47dea008cdab4a3eeda4a8f9972d7",
@@ -591,7 +591,7 @@
                   "id": "m365gov-coverage-and-gaps",
                   "resourceName": "m365gov-coverage-and-gaps",
                   "displayName": "M365 Governance Coverage and Gaps",
-                  "version": "0.1.3",
+                  "version": "0.1.4",
                   "source": "src/workbooks/m365gov-coverage-and-gaps.workbook.json",
                   "metadata": "src/workbooks/m365gov-coverage-and-gaps.metadata.json",
                   "sha256": "30ff3e2f56f7fd393d3a1c436464bc19492e7f869f6260dfe659a9777973277d",
@@ -603,7 +603,7 @@
                   "id": "m365gov-data-health",
                   "resourceName": "m365gov-data-health",
                   "displayName": "M365 Governance Data Health",
-                  "version": "0.1.3",
+                  "version": "0.1.4",
                   "source": "src/workbooks/m365gov-data-health.workbook.json",
                   "metadata": "src/workbooks/m365gov-data-health.metadata.json",
                   "sha256": "c650a29c51cb56440ba369687180e30ce1f7bf9b8e84bb5a27619ba9a2b92005",
@@ -615,7 +615,7 @@
                   "id": "m365gov-governance-overview",
                   "resourceName": "m365gov-governance-overview",
                   "displayName": "M365 Copilot Governance Overview",
-                  "version": "0.1.3",
+                  "version": "0.1.4",
                   "source": "src/workbooks/m365gov-governance-overview.workbook.json",
                   "metadata": "src/workbooks/m365gov-governance-overview.metadata.json",
                   "sha256": "0a6c27021a7daf66333a0882ac7a6adcb1448a656f94ef0592b22f62b3a7df9a",
@@ -627,7 +627,7 @@
                   "id": "m365gov-native-alert-correlation",
                   "resourceName": "m365gov-native-alert-correlation",
                   "displayName": "M365 Governance Native Alert Correlation",
-                  "version": "0.1.3",
+                  "version": "0.1.4",
                   "source": "src/workbooks/m365gov-native-alert-correlation.workbook.json",
                   "metadata": "src/workbooks/m365gov-native-alert-correlation.metadata.json",
                   "sha256": "51e3a2a918007d2b607995c1672577e55dc18f76179aac69bedba690ce73c245",
@@ -667,7 +667,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.46.1.21595",
-                      "templateHash": "13219878269098733779"
+                      "templateHash": "7964945795994671094"
                     }
                   },
                   "parameters": {
@@ -717,7 +717,7 @@
                         "query": "[parameters('functions')[copyIndex()].query]",
                         "functionAlias": "[parameters('functions')[copyIndex()].functionAlias]",
                         "functionParameters": "[parameters('functions')[copyIndex()].functionParameters]",
-                        "version": "[parameters('functions')[copyIndex()].version]",
+                        "version": 1,
                         "tags": [
                           {
                             "name": "Solution",
@@ -770,7 +770,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.46.1.21595",
-                      "templateHash": "469662951745580862"
+                      "templateHash": "9925139532254999254"
                     }
                   },
                   "parameters": {
@@ -823,28 +823,7 @@
                       "scope": "[resourceId('Microsoft.OperationalInsights/workspaces', last(split(parameters('workspaceResourceId'), '/')))]",
                       "name": "[guid(parameters('workspaceResourceId'), parameters('analytics')[copyIndex()].resourceName)]",
                       "kind": "Scheduled",
-                      "properties": {
-                        "alertDetailsOverride": "[parameters('analytics')[copyIndex()].alertDetailsOverride]",
-                        "customDetails": "[parameters('analytics')[copyIndex()].customDetails]",
-                        "description": "[parameters('analytics')[copyIndex()].description]",
-                        "displayName": "[parameters('analytics')[copyIndex()].displayName]",
-                        "enabled": "[and(parameters('analyticsEnabled'), parameters('analytics')[copyIndex()].enabledByDefault)]",
-                        "entityMappings": "[parameters('analytics')[copyIndex()].entityMappings]",
-                        "eventGroupingSettings": {
-                          "aggregationKind": "[parameters('analytics')[copyIndex()].eventGroupingAggregationKind]"
-                        },
-                        "incidentConfiguration": "[parameters('analytics')[copyIndex()].incidentConfiguration]",
-                        "query": "[parameters('analytics')[copyIndex()].query]",
-                        "queryFrequency": "[parameters('analytics')[copyIndex()].queryFrequency]",
-                        "queryPeriod": "[parameters('analytics')[copyIndex()].queryPeriod]",
-                        "severity": "[parameters('analytics')[copyIndex()].severity]",
-                        "suppressionDuration": "[parameters('analytics')[copyIndex()].suppressionDuration]",
-                        "suppressionEnabled": "[parameters('analytics')[copyIndex()].suppressionEnabled]",
-                        "tactics": "[parameters('analytics')[copyIndex()].tactics]",
-                        "techniques": "[parameters('analytics')[copyIndex()].techniques]",
-                        "triggerOperator": "[parameters('analytics')[copyIndex()].triggerOperator]",
-                        "triggerThreshold": "[parameters('analytics')[copyIndex()].triggerThreshold]"
-                      }
+                      "properties": "[union(createObject('alertDetailsOverride', parameters('analytics')[copyIndex()].alertDetailsOverride, 'customDetails', parameters('analytics')[copyIndex()].customDetails, 'description', parameters('analytics')[copyIndex()].description, 'displayName', parameters('analytics')[copyIndex()].displayName, 'enabled', and(parameters('analyticsEnabled'), parameters('analytics')[copyIndex()].enabledByDefault), 'eventGroupingSettings', createObject('aggregationKind', parameters('analytics')[copyIndex()].eventGroupingAggregationKind), 'incidentConfiguration', parameters('analytics')[copyIndex()].incidentConfiguration, 'query', parameters('analytics')[copyIndex()].query, 'queryFrequency', parameters('analytics')[copyIndex()].queryFrequency, 'queryPeriod', parameters('analytics')[copyIndex()].queryPeriod, 'severity', parameters('analytics')[copyIndex()].severity, 'suppressionDuration', parameters('analytics')[copyIndex()].suppressionDuration, 'suppressionEnabled', parameters('analytics')[copyIndex()].suppressionEnabled, 'tactics', parameters('analytics')[copyIndex()].tactics, 'techniques', parameters('analytics')[copyIndex()].techniques, 'triggerOperator', parameters('analytics')[copyIndex()].triggerOperator, 'triggerThreshold', parameters('analytics')[copyIndex()].triggerThreshold), if(empty(parameters('analytics')[copyIndex()].entityMappings), createObject(), createObject('entityMappings', parameters('analytics')[copyIndex()].entityMappings)))]"
                     }
                   ],
                   "outputs": {

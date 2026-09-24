@@ -2,6 +2,14 @@
 
 All notable changes are documented here. The project follows [Semantic Versioning](https://semver.org/).
 
+## [0.1.4] - 2026-09-23
+
+### Fixed
+
+- Set Log Analytics saved-search `properties.version` to integer `1` instead of reusing the solution semantic version.
+- Omit optional Sentinel analytic-rule `entityMappings` when metadata contains no semantically valid mapping, while preserving populated mappings.
+- Added compiled ARM regressions for both service API contracts and regenerated deterministic deployment assets.
+
 ## [0.1.3] - 2026-09-23
 
 ### Fixed
@@ -46,6 +54,7 @@ All notable changes are documented here. The project follows [Semantic Versionin
 - Optional custom ingestion disabled by default.
 - Native control ownership and portal handoffs made explicit.
 
+[0.1.4]: https://github.com/x3nc0n/m365-copilot-governance-foundation/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/x3nc0n/m365-copilot-governance-foundation/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/x3nc0n/m365-copilot-governance-foundation/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/x3nc0n/m365-copilot-governance-foundation/compare/v0.1.0...v0.1.1
