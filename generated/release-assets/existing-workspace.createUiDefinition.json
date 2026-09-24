@@ -40,6 +40,15 @@
               "icon": "Warning",
               "text": "The picker can filter by Azure resource type, subscription, and location, but it cannot detect Microsoft Sentinel onboarding. Confirm Sentinel is enabled on the selected workspace before deployment. The template performs an onboarding-state read and fails if the state is missing or unreadable."
             }
+          },
+          {
+            "name": "queryStorageRequirement",
+            "type": "Microsoft.Common.InfoBox",
+            "visible": true,
+            "options": {
+              "icon": "Warning",
+              "text": "If this workspace requires customer-managed encryption for saved queries, configure a linked storage account with data source type Query before deploying. The foundation validates and documents this Microsoft-managed prerequisite but does not create or take ownership of customer storage."
+            }
           }
         ]
       },

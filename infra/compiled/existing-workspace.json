@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.46.1.21595",
-      "templateHash": "10461043112436813945"
+      "templateHash": "14038067015720616124"
     }
   },
   "parameters": {
@@ -136,7 +136,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.46.1.21595",
-              "templateHash": "7499327729266139442"
+              "templateHash": "10122112396317072844"
             }
           },
           "parameters": {
@@ -207,12 +207,12 @@
                   "version": "0.1.4",
                   "source": "src/functions/M365Gov_AiActivity.kql",
                   "metadata": "src/functions/M365Gov_AiActivity.metadata.json",
-                  "sha256": "75fe86ad8f5e7a5b051c601dbf55e739886b7e0aa09eb43ba4d9592aeda90867",
+                  "sha256": "11b7110a89b599bf9bf50c7120a677f39fcf9019b8a2ced3c2a73f13276f5c4a",
                   "controlOwner": "The source AI platform and its native governance service",
                   "category": "M365 Copilot Governance",
                   "functionAlias": "M365Gov_AiActivity",
-                  "functionParameters": "starttime:datetime = ago(14d), endtime:datetime = now()",
-                  "query": "_Im_AgentEvent(starttime=starttime, endtime=endtime)\n| project\n    TimeGenerated,\n    EventStartTime,\n    EventEndTime,\n    IngestionTime = ingestion_time(),\n    EventUid,\n    EventOriginalUid,\n    EventType,\n    EventOriginalType,\n    EventResult,\n    EventResultDetails,\n    ActorUsername,\n    ActorUserId,\n    ActingAppId,\n    ActingAppName,\n    SrcAgentId,\n    SrcAgentName,\n    TargetAgentId,\n    TargetAgentName,\n    PlatformTargetAgentId,\n    PlatformTargetAgentName,\n    ModelProviderName,\n    ModelName,\n    ToolId,\n    ToolName,\n    EventSessionId,\n    EventRequestId,\n    EventResponseId,\n    EventProduct,\n    EventVendor,\n    EventSchema,\n    EventSchemaVersion\n| extend\n    GovernanceFunction = \"M365Gov_AiActivity\",\n    AuthoritativeControlOwner = \"Source AI platform; Microsoft Sentinel ASIM provides normalization\",\n    NativePortalRoute = \"https://security.microsoft.com/\""
+                  "functionParameters": "starttime:datetime = datetime(null), endtime:datetime = datetime(null)",
+                  "query": "let queryStartTime = iff(isnull(starttime), ago(14d), starttime);\nlet queryEndTime = iff(isnull(endtime), now(), endtime);\n_Im_AgentEvent(starttime=queryStartTime, endtime=queryEndTime)\n| project\n    TimeGenerated,\n    EventStartTime,\n    EventEndTime,\n    IngestionTime = ingestion_time(),\n    EventUid,\n    EventOriginalUid,\n    EventType,\n    EventOriginalType,\n    EventResult,\n    EventResultDetails,\n    ActorUsername,\n    ActorUserId,\n    ActingAppId,\n    ActingAppName,\n    SrcAgentId,\n    SrcAgentName,\n    TargetAgentId,\n    TargetAgentName,\n    PlatformTargetAgentId,\n    PlatformTargetAgentName,\n    ModelProviderName,\n    ModelName,\n    ToolId,\n    ToolName,\n    EventSessionId,\n    EventRequestId,\n    EventResponseId,\n    EventProduct,\n    EventVendor,\n    EventSchema,\n    EventSchemaVersion\n| extend\n    GovernanceFunction = \"M365Gov_AiActivity\",\n    AuthoritativeControlOwner = \"Source AI platform; Microsoft Sentinel ASIM provides normalization\",\n    NativePortalRoute = \"https://security.microsoft.com/\""
                 },
                 {
                   "id": "M365Gov_AuthenticationEvents",
@@ -221,12 +221,12 @@
                   "version": "0.1.4",
                   "source": "src/functions/M365Gov_AuthenticationEvents.kql",
                   "metadata": "src/functions/M365Gov_AuthenticationEvents.metadata.json",
-                  "sha256": "5bfcfad8c4f63d5f76d60bb6f50f2e6a4dfb85cf9bedc3584e94b775dc72425d",
+                  "sha256": "c7a0c97fc9cbb01fb4938bd6daabbd8caff8d2d1ef839571328ad535751ff44a",
                   "controlOwner": "Microsoft Entra ID or the authentication source represented by ASIM",
                   "category": "M365 Copilot Governance",
                   "functionAlias": "M365Gov_AuthenticationEvents",
-                  "functionParameters": "starttime:datetime = ago(14d), endtime:datetime = now()",
-                  "query": "_Im_Authentication(starttime=starttime, endtime=endtime)\n| project\n    TimeGenerated,\n    EventStartTime,\n    EventEndTime,\n    IngestionTime = ingestion_time(),\n    EventUid,\n    EventType,\n    EventResult,\n    EventResultDetails,\n    EventOriginalResultDetails,\n    ActorUsername,\n    ActorUserId,\n    TargetUsername,\n    TargetUserId,\n    SrcIpAddr,\n    SrcGeoCountry,\n    TargetAppName,\n    TargetAppId,\n    LogonMethod,\n    EventProduct,\n    EventVendor,\n    EventSchema,\n    EventSchemaVersion\n| extend\n    GovernanceFunction = \"M365Gov_AuthenticationEvents\",\n    AuthoritativeControlOwner = \"Microsoft Entra ID and the source authentication provider\",\n    NativePortalRoute = \"https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/SignIns\""
+                  "functionParameters": "starttime:datetime = datetime(null), endtime:datetime = datetime(null)",
+                  "query": "let queryStartTime = iff(isnull(starttime), ago(14d), starttime);\nlet queryEndTime = iff(isnull(endtime), now(), endtime);\n_Im_Authentication(starttime=queryStartTime, endtime=queryEndTime)\n| project\n    TimeGenerated,\n    EventStartTime,\n    EventEndTime,\n    IngestionTime = ingestion_time(),\n    EventUid,\n    EventType,\n    EventResult,\n    EventResultDetails,\n    EventOriginalResultDetails,\n    ActorUsername,\n    ActorUserId,\n    TargetUsername,\n    TargetUserId,\n    SrcIpAddr,\n    SrcGeoCountry,\n    TargetAppName,\n    TargetAppId,\n    LogonMethod,\n    EventProduct,\n    EventVendor,\n    EventSchema,\n    EventSchemaVersion\n| extend\n    GovernanceFunction = \"M365Gov_AuthenticationEvents\",\n    AuthoritativeControlOwner = \"Microsoft Entra ID and the source authentication provider\",\n    NativePortalRoute = \"https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/SignIns\""
                 },
                 {
                   "id": "M365Gov_DataHealth",

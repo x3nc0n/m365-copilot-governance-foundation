@@ -1,4 +1,6 @@
-_Im_Authentication(starttime=starttime, endtime=endtime)
+let queryStartTime = iff(isnull(starttime), ago(14d), starttime);
+let queryEndTime = iff(isnull(endtime), now(), endtime);
+_Im_Authentication(starttime=queryStartTime, endtime=queryEndTime)
 | project
     TimeGenerated,
     EventStartTime,

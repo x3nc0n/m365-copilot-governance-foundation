@@ -8,6 +8,8 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 - Set Log Analytics saved-search `properties.version` to integer `1` instead of reusing the solution semantic version.
 - Omit optional Sentinel analytic-rule `entityMappings` when metadata contains no semantically valid mapping, while preserving populated mappings.
+- Replaced dynamic saved-search function parameter defaults with literal nullable datetimes while preserving rolling query windows inside KQL.
+- Documented the customer-managed `Query` linked-storage prerequisite for workspaces that restrict saved-query writes.
 - Added compiled ARM regressions for both service API contracts and regenerated deterministic deployment assets.
 
 ## [0.1.3] - 2026-09-23

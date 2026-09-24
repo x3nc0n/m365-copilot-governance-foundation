@@ -100,6 +100,7 @@ Describe 'Content manifest generation' {
                 $entry.PSObject.Properties.Name | Should -Contain $property
             }
             $entry.query | Should -Be (Get-NormalizedTextContent -Path (Join-Path $script:RepositoryRoot $entry.source)).TrimEnd()
+            $entry.functionParameters | Should -Not -Match '\b(?:ago|now)\s*\('
         }
         foreach ($entry in $manifest.analytics) {
             foreach ($property in $analyticProperties) {
