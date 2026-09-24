@@ -107,7 +107,7 @@
     "outputs": {
       "location": "[basics('location')]",
       "solutionName": "m365CopilotGovernance",
-      "solutionVersion": "0.1.2",
+      "solutionVersion": "0.1.3",
       "resourceNamePrefix": "[steps('content').resourceNamePrefix]",
       "deployFunctions": "[steps('content').deployFunctions]",
       "deployAnalytics": "[steps('content').deployAnalytics]",

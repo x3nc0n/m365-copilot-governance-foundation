@@ -58,7 +58,7 @@ Optional custom ingestion has its own validation:
 .\scripts\Test-CustomIngestion.ps1
 ```
 
-`Test-GovernanceDeployment.ps1` accepts `RepositoryRoot`, `Online`, and `OutputFormat`. The other test wrappers accept `Online` and `OutputFormat`; output is `Json` by default or `Object` when selected. In v0.1.2, `-Online` does not authenticate or run live queries: it returns a warning directing the operator to a separately authorized check. Structured results use pass, warning, fail, skipped, evidence, and remediation fields.
+`Test-GovernanceDeployment.ps1` accepts `RepositoryRoot`, `Online`, and `OutputFormat`. The other test wrappers accept `Online` and `OutputFormat`; output is `Json` by default or `Object` when selected. In v0.1.3, `-Online` does not authenticate or run live queries: it returns a warning directing the operator to a separately authorized check. Structured results use pass, warning, fail, skipped, evidence, and remediation fields.
 
 ## Cost review queries
 

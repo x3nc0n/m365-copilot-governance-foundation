@@ -74,7 +74,7 @@ $artifacts = @(
 
 $manifest = [ordered]@{
     schemaVersion         = '1.0.0'
-    solutionVersion       = '0.1.2'
+    solutionVersion       = '0.1.3'
     contentManifestSha256 = Get-Sha256 -Path $contentManifestPath
     artifacts             = $artifacts
 }

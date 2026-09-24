@@ -79,7 +79,7 @@
     "outputs": {
       "location": "[steps('workspace').workspaceSelector.location]",
       "solutionName": "m365CopilotGovernance",
-      "solutionVersion": "0.1.2",
+      "solutionVersion": "0.1.3",
       "resourceNamePrefix": "m365gov",
       "deployFunctions": "[steps('content').deployFunctions]",
       "deployAnalytics": "[steps('content').deployAnalytics]",

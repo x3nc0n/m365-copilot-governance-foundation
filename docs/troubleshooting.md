@@ -37,13 +37,13 @@ Azure Portal fetches the template and `createUiDefinition` cross-origin. A GitHu
 The portal links must use the immutable raw tagged files under:
 
 ```text
-https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.2/generated/release-assets/<asset>
+https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.3/generated/release-assets/<asset>
 ```
 
 Verify all four responses anonymously:
 
 ```powershell
-$baseUri = 'https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.2/generated/release-assets'
+$baseUri = 'https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.3/generated/release-assets'
 $assets = @(
   'greenfield.json'
   'greenfield.createUiDefinition.json'
@@ -66,13 +66,13 @@ If the raw response returns `200` and valid JSON but the header is missing or is
 
 ## Release asset returns 404
 
-The `v0.1.1` tag exists, but its release workflow failed during generated-artifact drift validation before assets were published. Keep that tag immutable and use the `v0.1.2` recovery release after its workflow succeeds.
+The `v0.1.1` tag exists, but its release workflow failed during generated-artifact drift validation before assets were published. Keep that tag immutable. Version `v0.1.2` corrected release determinism but has an existing-workspace onboarding validation defect; use `v0.1.3` after its workflow succeeds.
 
 Immutable release download URLs require three separate GitHub objects: the tag, the GitHub Release associated with that tag, and the named release asset. Diagnose them in that order; do not replace an immutable URL with a moving `main` or `dev` branch.
 
 ```powershell
 $Repository = 'x3nc0n/m365-copilot-governance-foundation'
-$Tag = 'v0.1.2'
+$Tag = 'v0.1.3'
 
 # 1. Confirm that the Git tag exists.
 gh api "repos/$Repository/git/ref/tags/$Tag"
@@ -92,7 +92,7 @@ Test the public path without GitHub CLI credentials, then verify the downloaded 
 
 ```powershell
 $Repository = 'x3nc0n/m365-copilot-governance-foundation'
-$Tag = 'v0.1.2'
+$Tag = 'v0.1.3'
 $Asset = 'greenfield.json'
 $BaseUri = "https://github.com/$Repository/releases/download/$Tag"
 
@@ -126,6 +126,7 @@ Stop. Do not deploy. Confirm the scenario, target resource ID, parameter file, a
 - **The expected workspace is absent:** the picker lists Log Analytics workspaces in the Basics subscription, across all locations. Confirm the workspace is in that subscription and search by workspace or resource-group name.
 - **Sentinel is not enabled:** the resource selector cannot filter on Sentinel onboarding. Enable Sentinel on the workspace or select another workspace before deployment.
 - **Onboarding state is unreadable:** permission to list the workspace does not guarantee permission to read `Microsoft.SecurityInsights/onboardingStates/default`. Ask for the narrow required read access; do not broaden permissions blindly.
+- **`customerManagedKey` does not exist:** version `v0.1.2` incorrectly dereferenced this optional onboarding-state property. Use `v0.1.3`, which evaluates the complete properties object and accepts a valid empty object.
 - **Content write fails later:** Sentinel onboarding validation succeeded, but the deployment identity lacks one or more content write actions. Review the failed resource type and effective RBAC.
 
 The template's onboarding-state read intentionally distinguishes selection from readiness. Use `Test-SentinelConnector.ps1` or an authorized read-only `az rest` GET for the onboarding-state resource when portal feedback is insufficient.
@@ -148,7 +149,7 @@ Use `Test-GraphAccess.ps1` and compare required versus effective permissions. Au
 
 ## Bootstrap does not change anything
 
-This is expected in v0.1.2. Without `-Bootstrap`, the command returns a skipped result. With `-Bootstrap`, preview with `-WhatIf`; a confirmed run still creates no identity or consent and returns a warning that the MVP preserves the human-controlled handoff. A denied confirmation or missing approval also leaves the tenant unchanged.
+This is expected in v0.1.3. Without `-Bootstrap`, the command returns a skipped result. With `-Bootstrap`, preview with `-WhatIf`; a confirmed run still creates no identity or consent and returns a warning that the MVP preserves the human-controlled handoff. A denied confirmation or missing approval also leaves the tenant unchanged.
 
 ## Workbook is empty
 
