@@ -77,6 +77,19 @@ In the existing-workspace Deploy to Azure experience, subscription and deploymen
 
 The selector supports resource-type, subscription, and location filtering only. It cannot filter on the `Microsoft.SecurityInsights/onboardingStates/default` child resource, so it cannot guarantee that every listed Log Analytics workspace has Sentinel enabled. The UI displays this limitation, and the existing-workspace template resolves the onboarding state's complete `properties` object before starting the nested content deployment. The object may legitimately be empty; its evaluation is an existence/readability gate, not a check for any optional property. A missing state or insufficient read permission therefore fails before solution content is created.
 
+Saved-query functions use the workspace's configured query storage. If the workspace requires customer-managed encryption for saved queries, Microsoft requires a linked storage account with data source type `Query`. Configure that workspace prerequisite before deploying functions; this project does not create, link, grant access to, or take lifecycle ownership of customer storage. Starting August 31, 2026, Microsoft also requires a managed identity on the workspace and `Storage Table Data Contributor` for that identity on the linked storage account when creating or updating links.
+
+Inspect the existing link without changing it:
+
+```powershell
+az monitor log-analytics workspace linked-storage show `
+  --resource-group <workspace-resource-group> `
+  --workspace-name <workspace-name> `
+  --data-source-type Query
+```
+
+Use the Azure portal **Log Analytics workspace > Linked storage accounts** experience or the Microsoft-documented linked-storage command only after the storage account, encryption, network, identity, RBAC, retention, and cost choices are approved by the customer. See [Use customer-managed storage accounts in Azure Monitor Logs](https://learn.microsoft.com/azure/azure-monitor/logs/private-storage).
+
 Both paths expose these exact outputs:
 
 - `solutionVersion`

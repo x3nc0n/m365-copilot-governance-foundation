@@ -5,7 +5,7 @@
   "displayName": "M365 Governance AI Activity",
   "category": "M365 Copilot Governance",
   "functionAlias": "M365Gov_AiActivity",
-  "functionParameters": "starttime:datetime = ago(14d), endtime:datetime = now()",
+  "functionParameters": "starttime:datetime = datetime(null), endtime:datetime = datetime(null)",
   "authoritativeControlOwner": {
     "name": "The source AI platform and its native governance service",
     "sentinelRole": "ASIM Agent Event normalization and correlation"

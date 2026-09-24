@@ -60,6 +60,7 @@ The executable contracts live in Bicep and PowerShell. This README intentionally
 - Rights appropriate to the selected deployment path; see [least privilege](docs/deployment.md#least-privilege)
 - A Microsoft 365 tenant with the licenses and native products needed for the connectors you enable
 - For separately authorized manual validation: Az and Microsoft Graph PowerShell modules described in [deployment guidance](docs/deployment.md#powershell-modules)
+- For workspaces that require customer-managed encryption of saved queries: a same-region linked storage account configured for data source type `Query`; the foundation does not create or own this storage
 
 Validation is read-only by default. Bootstrap mutations require an explicit switch, support `-WhatIf` and `-Confirm`, and keep administrator consent and privacy/legal approval as human gates.
 

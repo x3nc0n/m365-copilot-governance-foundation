@@ -91,6 +91,12 @@ Describe 'Azure portal definitions' {
         $sentinelWarning[0].type | Should -Be 'Microsoft.Common.InfoBox'
         $sentinelWarning[0].options.icon | Should -Be 'Warning'
         $sentinelWarning[0].options.text | Should -Match 'cannot detect Microsoft Sentinel onboarding'
+
+        $queryStorageWarning = @($elements | Where-Object name -eq 'queryStorageRequirement')
+        $queryStorageWarning | Should -HaveCount 1
+        $queryStorageWarning[0].type | Should -Be 'Microsoft.Common.InfoBox'
+        $queryStorageWarning[0].options.icon | Should -Be 'Warning'
+        $queryStorageWarning[0].options.text | Should -Match 'data source type Query'
     }
 
     It 'maps every existing-workspace template parameter exactly once' {

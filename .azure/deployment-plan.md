@@ -975,3 +975,31 @@ The next live deployment passed the onboarding-state gate and reached Sentinel c
 | Azure deployment validation | Passed with documented limitation | Greenfield `az deployment group validate` succeeded in `rg-octavepg-prod`; ARM warned that reference-dependent nested validation was short-circuited |
 | Azure what-if | Passed | Greenfield `what-if --result-format ResourceIdOnly` expanded four saved searches and three analytic rules and completed with status `Succeeded` |
 | Existing-workspace live retry | Pending manual test | The authenticated subscription exposes no Log Analytics workspace and differs from the reported failing subscription, so no deployment was created |
+
+## 21. Saved-search function and query-storage hotfix
+
+The manual deployment from `dev` passed the previous payload checks but exposed two additional saved-search requirements:
+
+1. `M365Gov_AiActivity` and `M365Gov_AuthenticationEvents` used dynamic `ago()` and `now()` expressions as function parameter defaults. The saved-search parser accepts literal defaults, not these dynamic expressions.
+2. The target workspace restricts saved-query writes to customer-managed storage and requires an existing linked storage account with data source type `Query`.
+
+### Approved correction
+
+1. Use `datetime(null)` literal defaults for the two affected function signatures.
+2. Preserve the rolling 14-day start and current-time end behavior inside each KQL body with `iff(isnull(...))`.
+3. Add manifest regression coverage that rejects `ago()` and `now()` in generated function parameter strings.
+4. Add an existing-workspace portal warning and deployment/troubleshooting guidance for the Microsoft-managed `Query` linked-storage prerequisite.
+5. Do not create, link, grant access to, or take lifecycle ownership of customer storage. Storage region, encryption, networking, managed identity, RBAC, retention, and cost remain customer-controlled prerequisites.
+6. Keep version `0.1.4` because it has not yet been promoted or published as an immutable release.
+
+### Validation proof — 2026-09-24
+
+| Check | Result | Evidence |
+|---|---|---|
+| Function parameter contract | Passed | Generated and compiled definitions contain no `ago()` or `now()` expressions in `functionParameters`; affected signatures use `datetime(null)` literals |
+| Query behavior | Passed | Both affected KQL functions apply `ago(14d)` and `now()` inside the body when nullable parameters are omitted |
+| Canonical CI build | Passed twice | 55 tests passed, 0 failed; nine release-critical outputs retained identical SHA-256 hashes |
+| JSON and Bicep | Passed | 33 JSON files validated; both entry points and parameter files compiled with Bicep `0.46.1` |
+| PowerShell analysis | Passed | Zero findings on repository-owned PowerShell paths |
+| Target workspace inspection | Blocked prerequisite confirmed | `law-tc-westus2` has no `linkedStorageAccounts/Query` resource and no workspace managed identity |
+| Azure context cleanup | Passed | Azure CLI subscription restored to `61aaaf5a-e67f-441e-ae0d-0092ce6b5a70` after read-only inspection |
