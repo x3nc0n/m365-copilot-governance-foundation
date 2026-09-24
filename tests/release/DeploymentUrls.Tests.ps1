@@ -11,7 +11,7 @@ BeforeAll {
         'docs/deployment.md'
     )
     $script:Repository = 'x3nc0n/m365-copilot-governance-foundation'
-    $script:Tag = 'v0.1.3'
+    $script:Tag = 'v0.1.4'
     $script:RawBaseUri = "https://raw.githubusercontent.com/$($script:Repository)/$($script:Tag)/generated/release-assets"
     $script:ExpectedAssets = @{
         'greenfield' = @{
@@ -65,7 +65,7 @@ Describe 'Azure portal deployment documentation URLs' {
         }
     }
 
-    It 'uses only immutable raw v0.1.3 release assets in portal URL payloads' {
+    It 'uses only immutable raw v0.1.4 release assets in portal URL payloads' {
         $actualTemplates = [System.Collections.Generic.List[string]]::new()
         $actualUiDefinitions = [System.Collections.Generic.List[string]]::new()
 

@@ -1,6 +1,23 @@
 BeforeAll {
     $script:RepositoryRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
     $script:VerifyRoot = Join-Path $script:RepositoryRoot 'build/.verify'
+
+    function Get-NestedArmResource {
+        param(
+            [Parameter(Mandatory)]
+            [object]$Template
+        )
+
+        foreach ($resource in @($Template.resources)) {
+            $resource
+            if (
+                $resource.PSObject.Properties.Name -contains 'properties' -and
+                $resource.properties.PSObject.Properties.Name -contains 'template'
+            ) {
+                Get-NestedArmResource -Template $resource.properties.template
+            }
+        }
+    }
 }
 
 AfterAll {
@@ -75,6 +92,50 @@ Describe 'ARM and Bicep drift' {
             Should -Match '^(\[reference\().*Microsoft\.SecurityInsights/onboardingStates'
         $contentDeployment.properties.template.parameters.sentinelOnboardingStateProperties.type |
             Should -Be 'object'
+    }
+
+    It 'uses resource-valid saved-search versions and omits empty analytic entity mappings' {
+        foreach ($relativePath in @(
+            'infra/compiled/greenfield.json'
+            'infra/compiled/existing-workspace.json'
+        )) {
+            $templateRaw = Get-Content -LiteralPath (Join-Path $script:RepositoryRoot $relativePath) -Raw
+            $template = $templateRaw | ConvertFrom-Json -Depth 100
+            $resources = @(Get-NestedArmResource -Template $template)
+
+            $savedSearchResources = @(
+                $resources |
+                    Where-Object type -eq 'Microsoft.OperationalInsights/workspaces/savedSearches'
+            )
+            $savedSearchResources | Should -Not -BeNullOrEmpty -Because $relativePath
+            foreach ($resource in $savedSearchResources) {
+                $resource.properties.version | Should -BeOfType ([long])
+                $resource.properties.version | Should -Be 1
+            }
+
+            $analyticResources = @(
+                $resources |
+                    Where-Object type -eq 'Microsoft.SecurityInsights/alertRules'
+            )
+            $analyticResources | Should -Not -BeNullOrEmpty -Because $relativePath
+            foreach ($resource in $analyticResources) {
+                $resource.properties | Should -Match "if\(empty\(.*\.entityMappings\), createObject\(\), createObject\('entityMappings', .*\.entityMappings\)\)"
+            }
+
+            $contentDeployment = $template.resources |
+                Where-Object { $_.type -eq 'Microsoft.Resources/deployments' -and $_.name -match 'content' } |
+                Select-Object -First 1
+            $contentManifest = $contentDeployment.properties.template.variables.PSObject.Properties.Value |
+                Where-Object {
+                    $_ -isnot [string] -and
+                    $_.PSObject.Properties.Name -contains 'analytics'
+                } |
+                Select-Object -First 1
+            @($contentManifest.analytics | Where-Object { @($_.entityMappings).Count -eq 0 }) |
+                Should -HaveCount 1
+            @($contentManifest.analytics | Where-Object { @($_.entityMappings).Count -gt 0 }) |
+                Should -HaveCount 2
+        }
     }
 
     It 'embeds four functions, three analytics, and four workbooks with deployable properties' {

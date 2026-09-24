@@ -50,7 +50,7 @@ function Get-ContentEntries {
             id           = [string]$metadata.name
             resourceName = [string]$metadata.name
             displayName  = [string]$metadata.displayName
-            version      = '0.1.3'
+            version      = '0.1.4'
             source       = ConvertTo-RepositoryPath -Path $sourcePath -RepositoryRoot $RepositoryRoot
             metadata     = ConvertTo-RepositoryPath -Path $metadataFile.FullName -RepositoryRoot $RepositoryRoot
             sha256       = Get-NormalizedTextSha256 -Path $sourcePath
@@ -175,7 +175,7 @@ do {
 
 $manifest = [ordered]@{
     schemaVersion   = '1.0.0'
-    solutionVersion = '0.1.3'
+    solutionVersion = '0.1.4'
     functions       = @(Get-ContentEntries -Kind functions)
     analytics       = @(Get-ContentEntries -Kind analytics)
     workbooks       = @(Get-ContentEntries -Kind workbooks)
