@@ -1,9 +1,9 @@
 # Azure Deployment Plan
 
-> **Status:** Ready for Release Validation
-> **Current phase:** Issue #10 implements deterministic cross-platform generation and the `v0.1.2` recovery candidate after the immutable `v0.1.1` release workflow failed before asset publication
-> **Next status:** Validated after the `v0.1.2` tag workflow succeeds, published assets and tagged raw URLs are verified, CreateUiDefinition Sandbox is exercised, and authorized Azure `validate`/`what-if` checks complete
-> **Approval:** The user authorized issue #10 implementation and offline validation on September 22, 2026 without committing, pushing, tagging, publishing a release, or deploying Azure resources.
+> **Status:** Validated
+> **Current phase:** The `v0.1.3` onboarding-state hotfix passed offline validation plus Azure `validate` and `what-if` against the workspace that exposed the defect
+> **Next status:** Release candidate after PR promotion, immutable tag publication, and tagged asset/CORS verification
+> **Approval:** The user reported the live deployment failure on September 23, 2026 and requested correction. The change remains limited to repository artifacts until validation and release promotion complete.
 
 **Generated:** 2026-09-22
 **Owner:** Trinity, Azure IaC Engineer
@@ -880,3 +880,50 @@ Validation completed on September 23, 2026:
 | Generated drift gate | Passed | After staging expected regenerated outputs, `git diff --exit-code -- generated infra/compiled` was clean |
 | Tagged raw URL/CORS checks | Not run | `v0.1.2` does not exist yet; no tagged CORS success is claimed |
 | Azure validation/deployment | Not run | No authorized `validate`, `what-if`, or resource mutation was performed |
+
+## 19. Existing-workspace onboarding-state hotfix
+
+The first live `v0.1.2` existing-workspace deployment reached the intended Sentinel readiness gate but failed while evaluating:
+
+```text
+sentinelOnboardingState.properties.customerManagedKey
+```
+
+The selected workspace is Sentinel-enabled, but its `Microsoft.SecurityInsights/onboardingStates/default` response returned an empty `properties` object. `customerManagedKey` is therefore not a reliable readiness field and must not be treated as required.
+
+### Approved correction
+
+1. Preserve the deployment-time GET of `Microsoft.SecurityInsights/onboardingStates/default`.
+2. Pass the complete onboarding-state `properties` object into the nested content deployment rather than dereferencing `customerManagedKey`.
+3. Keep the parameter intentionally evaluated so a missing or unreadable onboarding state still fails before content deployment.
+4. Do not infer Sentinel readiness from an optional response property.
+5. Update the ARM/Bicep regression to require an onboarding-state reference without a `.customerManagedKey` dereference.
+6. Add a regression for an empty `properties` object.
+7. Update troubleshooting and deployment guidance to distinguish an existing empty properties object from a missing/unreadable onboarding state.
+8. Regenerate deterministic ARM templates, release assets, manifests, and checksums with the pinned Bicep compiler.
+9. Publish a new immutable patch release; do not rewrite `v0.1.2`.
+
+### Validation plan
+
+- Run targeted ARM/Bicep drift and deployment-contract tests.
+- Run the canonical CI build twice and compare all release-asset hashes.
+- Run Bicep lint and parameter compilation for both entry points.
+- Run an authorized resource-group `validate` against the reported workspace when credentials permit.
+- Verify the new tagged template and UI assets return valid JSON with `Access-Control-Allow-Origin: *`.
+- Retry the existing-workspace Deploy to Azure flow.
+
+### Validation proof — 2026-09-23
+
+| Check | Result | Evidence |
+|---|---|---|
+| Compiled onboarding contract | Passed | The nested content parameter is type `object` and evaluates `reference(.../Microsoft.SecurityInsights/onboardingStates/default...)` without `.customerManagedKey` |
+| Bicep lint | Passed | `az bicep lint` passed for greenfield and existing-workspace entry points |
+| Canonical CI build | Passed twice | `pwsh -NoProfile -File .\build\Invoke-Build.ps1 -CI` |
+| Pester | Passed | 54 passed, 0 failed, 0 skipped |
+| JSON validation | Passed | 33 JSON files |
+| PowerShell analysis | Passed | Zero PSScriptAnalyzer findings |
+| Deterministic release assets | Passed | All six release-asset hashes remained identical across the second canonical build |
+| Azure deployment validation | Passed | `az deployment group validate` succeeded against resource group `sf-sharedsvcs-sentinel-secops` and workspace `sf-law-westus2` with the original failed deployment flags |
+| Azure what-if | Passed | `az deployment group what-if --result-format ResourceIdOnly` succeeded against the same target |
+| Tagged raw URL/CORS checks | Pending | `v0.1.3` is not published yet |
+| Live create retry | Pending | Retry after the immutable `v0.1.3` release is published |
