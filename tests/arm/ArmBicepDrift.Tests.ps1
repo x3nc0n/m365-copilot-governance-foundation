@@ -58,12 +58,23 @@ Describe 'ARM and Bicep drift' {
 
     It 'requires a readable Sentinel onboarding state before existing-workspace content deployment' {
         $source = Get-Content -LiteralPath (Join-Path $script:RepositoryRoot 'infra/existing-workspace/main.bicep') -Raw
-        $source | Should -Match 'sentinelCustomerManagedKey:\s*sentinelOnboardingState\.properties\.customerManagedKey'
+        $source | Should -Match 'sentinelOnboardingStateProperties:\s*sentinelOnboardingState\.properties'
+        $source | Should -Not -Match 'sentinelOnboardingState\.properties\.customerManagedKey'
 
-        $template = Get-Content -LiteralPath (Join-Path $script:RepositoryRoot 'infra/compiled/existing-workspace.json') -Raw
-        $template | Should -Match '"sentinelCustomerManagedKey"'
-        $template | Should -Match 'Microsoft\.SecurityInsights/onboardingStates'
-        $template | Should -Match '\.customerManagedKey'
+        $templatePath = Join-Path $script:RepositoryRoot 'infra/compiled/existing-workspace.json'
+        $templateRaw = Get-Content -LiteralPath $templatePath -Raw
+        $templateRaw | Should -Match '"sentinelOnboardingStateProperties"'
+        $templateRaw | Should -Match 'Microsoft\.SecurityInsights/onboardingStates'
+        $templateRaw | Should -Not -Match '\.customerManagedKey'
+
+        $template = $templateRaw | ConvertFrom-Json -Depth 100
+        $contentDeployment = $template.resources |
+            Where-Object { $_.type -eq 'Microsoft.Resources/deployments' -and $_.name -match 'content' } |
+            Select-Object -First 1
+        $contentDeployment.properties.parameters.sentinelOnboardingStateProperties.value |
+            Should -Match '^(\[reference\().*Microsoft\.SecurityInsights/onboardingStates'
+        $contentDeployment.properties.template.parameters.sentinelOnboardingStateProperties.type |
+            Should -Be 'object'
     }
 
     It 'embeds four functions, three analytics, and four workbooks with deployable properties' {

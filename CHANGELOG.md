@@ -2,6 +2,14 @@
 
 All notable changes are documented here. The project follows [Semantic Versioning](https://semver.org/).
 
+## [0.1.3] - 2026-09-23
+
+### Fixed
+
+- Replaced the existing-workspace Sentinel readiness check's `customerManagedKey` dereference with evaluation of the complete onboarding-state `properties` object.
+- Allowed valid Sentinel onboarding responses with an empty properties object while preserving early failure for a missing or unreadable `Microsoft.SecurityInsights/onboardingStates/default` resource.
+- Added ARM/Bicep regression coverage for the property-agnostic onboarding-state contract and regenerated deterministic deployment assets.
+
 ## [0.1.2] - 2026-09-22
 
 ### Changed
@@ -38,6 +46,7 @@ All notable changes are documented here. The project follows [Semantic Versionin
 - Optional custom ingestion disabled by default.
 - Native control ownership and portal handoffs made explicit.
 
+[0.1.3]: https://github.com/x3nc0n/m365-copilot-governance-foundation/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/x3nc0n/m365-copilot-governance-foundation/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/x3nc0n/m365-copilot-governance-foundation/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/x3nc0n/m365-copilot-governance-foundation/releases/tag/v0.1.0
