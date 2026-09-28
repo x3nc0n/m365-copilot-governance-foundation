@@ -23,7 +23,7 @@ resource savedSearches 'Microsoft.OperationalInsights/workspaces/savedSearches@2
       query: functionDefinition.query
       functionAlias: functionDefinition.functionAlias
       functionParameters: functionDefinition.functionParameters
-      version: functionDefinition.version
+      version: 1
       tags: [
         {
           name: 'Solution'

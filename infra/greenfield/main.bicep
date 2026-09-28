@@ -9,7 +9,7 @@ param solutionName string = 'm365CopilotGovernance'
 
 @minLength(1)
 @description('Solution content version.')
-param solutionVersion string = '0.1.3'
+param solutionVersion string = '0.1.4'
 
 @minLength(1)
 @maxLength(32)

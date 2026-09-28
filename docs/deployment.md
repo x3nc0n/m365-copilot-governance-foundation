@@ -28,7 +28,7 @@ Install-Module Pester -Scope CurrentUser
 Install-Module PSScriptAnalyzer -Scope CurrentUser
 ```
 
-Pin approved versions in controlled build environments. Authentication is an explicit operator action; scripts must not cache or print access tokens. Version 0.1.3 does not automatically authenticate or perform live tenant queries: `-Online` returns a handoff warning for separately authorized validation.
+Pin approved versions in controlled build environments. Authentication is an explicit operator action; scripts must not cache or print access tokens. Version 0.1.4 does not automatically authenticate or perform live tenant queries: `-Online` returns a handoff warning for separately authorized validation.
 
 Install the compiler used for canonical artifacts before running the build:
 
@@ -63,7 +63,7 @@ Both paths use these exact parameters:
 |---|---|---|
 | `location` | string | Resource-group location |
 | `solutionName` | string | `m365CopilotGovernance` |
-| `solutionVersion` | string | `0.1.3` |
+| `solutionVersion` | string | `0.1.4` |
 | `resourceNamePrefix` | string | `m365gov` |
 | `deployFunctions` | bool | `true` |
 | `deployAnalytics` | bool | `true` |
@@ -76,6 +76,19 @@ Greenfield adds `workspaceName` (required), `workspaceSku` (default `PerGB2018`)
 In the existing-workspace Deploy to Azure experience, subscription and deployment-history resource group come from the portal's built-in **Basics** controls. The custom step uses `Microsoft.Solutions.ResourceSelector` to list only `Microsoft.OperationalInsights/workspaces` in that subscription. The selected workspace can be in a different resource group from the deployment-history resource group. Its resource ID and location are mapped to `workspaceResourceId` and `location`; no second location control or raw resource-ID textbox is shown.
 
 The selector supports resource-type, subscription, and location filtering only. It cannot filter on the `Microsoft.SecurityInsights/onboardingStates/default` child resource, so it cannot guarantee that every listed Log Analytics workspace has Sentinel enabled. The UI displays this limitation, and the existing-workspace template resolves the onboarding state's complete `properties` object before starting the nested content deployment. The object may legitimately be empty; its evaluation is an existence/readability gate, not a check for any optional property. A missing state or insufficient read permission therefore fails before solution content is created.
+
+Saved-query functions use the workspace's configured query storage. If the workspace requires customer-managed encryption for saved queries, Microsoft requires a linked storage account with data source type `Query`. Configure that workspace prerequisite before deploying functions; this project does not create, link, grant access to, or take lifecycle ownership of customer storage. Starting August 31, 2026, Microsoft also requires a managed identity on the workspace and `Storage Table Data Contributor` for that identity on the linked storage account when creating or updating links.
+
+Inspect the existing link without changing it:
+
+```powershell
+az monitor log-analytics workspace linked-storage show `
+  --resource-group <workspace-resource-group> `
+  --workspace-name <workspace-name> `
+  --data-source-type Query
+```
+
+Use the Azure portal **Log Analytics workspace > Linked storage accounts** experience or the Microsoft-documented linked-storage command only after the storage account, encryption, network, identity, RBAC, retention, and cost choices are approved by the customer. See [Use customer-managed storage accounts in Azure Monitor Logs](https://learn.microsoft.com/azure/azure-monitor/logs/private-storage).
 
 Both paths expose these exact outputs:
 
@@ -226,7 +239,7 @@ Substitute the existing-workspace paths and use a distinct deployment name for t
 
 Validation commands are read-only by default. A tenant mutation requires `-Bootstrap` or another narrowly named mutation switch. Every mutating command must support `SupportsShouldProcess`, `-WhatIf`, and `-Confirm`, and must report the exact intended and applied difference.
 
-`Initialize-CollectorIdentity.ps1` has exact parameters `Bootstrap` and `OutputFormat`. Without `-Bootstrap`, it returns a skipped result. With `-Bootstrap`, v0.1.3 still creates no identity or consent; it exercises the `ShouldProcess` boundary and returns an explicit warning. Example safety flow:
+`Initialize-CollectorIdentity.ps1` has exact parameters `Bootstrap` and `OutputFormat`. Without `-Bootstrap`, it returns a skipped result. With `-Bootstrap`, v0.1.4 still creates no identity or consent; it exercises the `ShouldProcess` boundary and returns an explicit warning. Example safety flow:
 
 ```powershell
 .\scripts\Initialize-CollectorIdentity.ps1 -Bootstrap -WhatIf
@@ -237,16 +250,16 @@ Use `Get-Help <script> -Full` for the exact frozen parameters. Administrator con
 
 ## Deploy to Azure portal assets
 
-Version 0.1.3 uses these immutable raw tagged templates after the release tag is published:
+Version 0.1.4 uses these immutable raw tagged templates after the release tag is published:
 
 ```text
-https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.3/generated/release-assets/greenfield.json
-https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.3/generated/release-assets/existing-workspace.json
+https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.4/generated/release-assets/greenfield.json
+https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.4/generated/release-assets/existing-workspace.json
 ```
 
-Portal definition assets use the corresponding `greenfield.createUiDefinition.json` and `existing-workspace.createUiDefinition.json` names. Publish the `v0.1.3` GitHub Release with all required assets before using these URLs.
+Portal definition assets use the corresponding `greenfield.createUiDefinition.json` and `existing-workspace.createUiDefinition.json` names. Publish the `v0.1.4` GitHub Release with all required assets before using these URLs.
 
-Azure Portal must retrieve both files cross-origin. Follow the [Microsoft Deploy to Azure button guidance](https://learn.microsoft.com/azure/azure-resource-manager/templates/deploy-to-azure-button): use each raw GitHub URL, URL-encode it, and append it to the portal route. The raw tagged URLs provide the required CORS response and remain immutable because they are pinned to `v0.1.3`.
+Azure Portal must retrieve both files cross-origin. Follow the [Microsoft Deploy to Azure button guidance](https://learn.microsoft.com/azure/azure-resource-manager/templates/deploy-to-azure-button): use each raw GitHub URL, URL-encode it, and append it to the portal route. The raw tagged URLs provide the required CORS response and remain immutable because they are pinned to `v0.1.4`.
 
 GitHub Release assets serve a different purpose: human downloads, `release-manifest.json`, `checksums.sha256`, and release provenance. A successful release-asset download does not prove that Azure Portal can fetch that response cross-origin. Before opening a Deploy to Azure link, complete both the [portal header verification](release.md#verify-the-portal-assets) and the [release checksum verification](release.md#verify-the-published-release).
 

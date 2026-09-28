@@ -2,7 +2,7 @@ using './main.bicep'
 
 param location = 'eastus'
 param solutionName = 'm365CopilotGovernance'
-param solutionVersion = '0.1.3'
+param solutionVersion = '0.1.4'
 param resourceNamePrefix = 'm365gov'
 param deployFunctions = true
 param deployAnalytics = true

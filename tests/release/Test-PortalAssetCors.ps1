@@ -4,7 +4,7 @@ param()
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$baseUri = 'https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.3/generated/release-assets'
+$baseUri = 'https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.4/generated/release-assets'
 $assets = @(
     'greenfield.json'
     'existing-workspace.json'

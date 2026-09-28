@@ -5,7 +5,7 @@
   "displayName": "M365 Governance Authentication Events",
   "category": "M365 Copilot Governance",
   "functionAlias": "M365Gov_AuthenticationEvents",
-  "functionParameters": "starttime:datetime = ago(14d), endtime:datetime = now()",
+  "functionParameters": "starttime:datetime = datetime(null), endtime:datetime = datetime(null)",
   "authoritativeControlOwner": {
     "name": "Microsoft Entra ID or the authentication source represented by ASIM",
     "sentinelRole": "ASIM normalization and cross-source correlation"

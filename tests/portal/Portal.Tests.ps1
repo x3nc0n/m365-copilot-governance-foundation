@@ -73,7 +73,7 @@ Describe 'Azure portal definitions' {
         $definition.parameters.outputs.location | Should -Be "[steps('workspace').workspaceSelector.location]"
         $definition.parameters.outputs.workspaceResourceId | Should -Be "[steps('workspace').workspaceSelector.id]"
         $definition.parameters.outputs.solutionName | Should -Be 'm365CopilotGovernance'
-        $definition.parameters.outputs.solutionVersion | Should -Be '0.1.3'
+        $definition.parameters.outputs.solutionVersion | Should -Be '0.1.4'
         $definition.parameters.outputs.resourceNamePrefix | Should -Be 'm365gov'
         @($definition.parameters.outputs.tags.PSObject.Properties).Count | Should -Be 0
     }
@@ -91,6 +91,12 @@ Describe 'Azure portal definitions' {
         $sentinelWarning[0].type | Should -Be 'Microsoft.Common.InfoBox'
         $sentinelWarning[0].options.icon | Should -Be 'Warning'
         $sentinelWarning[0].options.text | Should -Match 'cannot detect Microsoft Sentinel onboarding'
+
+        $queryStorageWarning = @($elements | Where-Object name -eq 'queryStorageRequirement')
+        $queryStorageWarning | Should -HaveCount 1
+        $queryStorageWarning[0].type | Should -Be 'Microsoft.Common.InfoBox'
+        $queryStorageWarning[0].options.icon | Should -Be 'Warning'
+        $queryStorageWarning[0].options.text | Should -Match 'data source type Query'
     }
 
     It 'maps every existing-workspace template parameter exactly once' {

@@ -21,13 +21,12 @@ resource analyticRules 'Microsoft.SecurityInsights/alertRules@2024-03-01' = [
     scope: workspace
     name: guid(workspaceResourceId, analytic.resourceName)
     kind: 'Scheduled'
-    properties: {
+    properties: union({
       alertDetailsOverride: analytic.alertDetailsOverride
       customDetails: analytic.customDetails
       description: analytic.description
       displayName: analytic.displayName
       enabled: analyticsEnabled && analytic.enabledByDefault
-      entityMappings: analytic.entityMappings
       eventGroupingSettings: {
         aggregationKind: analytic.eventGroupingAggregationKind
       }
@@ -42,7 +41,9 @@ resource analyticRules 'Microsoft.SecurityInsights/alertRules@2024-03-01' = [
       techniques: analytic.techniques
       triggerOperator: analytic.triggerOperator
       triggerThreshold: analytic.triggerThreshold
-    }
+    }, empty(analytic.entityMappings) ? {} : {
+      entityMappings: analytic.entityMappings
+    })
   }
 ]
 
