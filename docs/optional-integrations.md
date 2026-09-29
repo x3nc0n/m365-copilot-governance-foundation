@@ -46,14 +46,14 @@ Safe fallback: use Microsoft 365 admin center or Viva reporting directly. The de
 
 ## Privacy-approved interaction export
 
-**Status:** Exceptional only; excluded from the default architecture.
+**Status:** Required deployment decision (`interactionContentCollection`); implemented in [Interaction content collection](interaction-content.md).
 
-`M365CopilotInteraction_CL` is not an MVP table. Consider an interaction export only when a documented coverage gap cannot be met in Microsoft Purview or another authoritative native service and privacy/legal approval explicitly authorizes the data flow.
+Choose `Enabled` only when privacy/legal approval explicitly authorizes collecting prompt and response content into Sentinel.
 
 Required isolation:
 
-- Separate identity from deployment and usage reporting.
-- Data minimization that excludes prompt and response content whenever possible.
+- Dedicated user-assigned managed identity separate from deployment and usage reporting.
+- Collection scope limited to the users approved for the purpose (all licensed users, an include group, or an exclude group).
 - Explicit field-level schema, regional storage decision, retention, purge, access review, and audit.
 - No reusable public sample containing tenant data.
 - No custom DLP, prompt regex, jailbreak-keyword, insider-risk, or communication-compliance logic.

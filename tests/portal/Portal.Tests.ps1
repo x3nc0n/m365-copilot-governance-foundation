@@ -73,18 +73,18 @@ Describe 'Azure portal definitions' {
         $definition.parameters.outputs.location | Should -Be "[steps('workspace').workspaceSelector.location]"
         $definition.parameters.outputs.workspaceResourceId | Should -Be "[steps('workspace').workspaceSelector.id]"
         $definition.parameters.outputs.solutionName | Should -Be 'm365CopilotGovernance'
-        $definition.parameters.outputs.solutionVersion | Should -Be '0.1.4'
+        $definition.parameters.outputs.solutionVersion | Should -Be '0.2.0'
         $definition.parameters.outputs.resourceNamePrefix | Should -Be 'm365gov'
         @($definition.parameters.outputs.tags.PSObject.Properties).Count | Should -Be 0
     }
 
-    It 'keeps analytics opt-in behavior safe and explains the Sentinel selector limitation' {
+    It 'keeps analytics deployment optional and explains the Sentinel selector limitation' {
         $definition = Get-Content -LiteralPath $script:ExistingWorkspacePortalPath -Raw | ConvertFrom-Json -Depth 100
         $elements = @($definition.parameters.steps | ForEach-Object { $_.elements })
-        $analyticsEnabled = @($elements | Where-Object name -eq 'analyticsEnabled')
-        $analyticsEnabled | Should -HaveCount 1
-        $analyticsEnabled[0].defaultValue | Should -BeFalse
-        $analyticsEnabled[0].visible | Should -Be "[steps('content').deployAnalytics]"
+        $elements.name | Should -Contain 'deployAnalytics'
+        $elements.name | Should -Not -Contain 'analyticsEnabled'
+        $definition.parameters.outputs.PSObject.Properties.Name | Should -Not -Contain 'analyticsEnabled'
+        $definition.parameters.outputs.deployAnalytics | Should -Be "[steps('content').deployAnalytics]"
 
         $sentinelWarning = @($elements | Where-Object name -eq 'sentinelRequirement')
         $sentinelWarning | Should -HaveCount 1
@@ -107,5 +107,58 @@ Describe 'Azure portal definitions' {
 
         $uiOutputs | Should -Be $templateParameters
         @($uiOutputs | Select-Object -Unique) | Should -HaveCount $uiOutputs.Count
+    }
+
+    It 'omits the analytics-enable parameter from both portal and ARM entry-point contracts' {
+        $contracts = @{
+            'greenfield' = @{
+                Portal = Join-Path $portalRoot 'greenfield/createUiDefinition.json'
+                Template = Join-Path $script:RepositoryRoot 'infra/compiled/greenfield.json'
+            }
+            'existing-workspace' = @{
+                Portal = $script:ExistingWorkspacePortalPath
+                Template = $script:ExistingWorkspaceTemplatePath
+            }
+        }
+
+        foreach ($contract in $contracts.GetEnumerator()) {
+            $definition = Get-Content -LiteralPath $contract.Value.Portal -Raw | ConvertFrom-Json -Depth 100
+            $elements = @($definition.parameters.steps | ForEach-Object { $_.elements })
+            $elements.name | Should -Not -Contain 'analyticsEnabled' -Because $contract.Key
+            $definition.parameters.outputs.PSObject.Properties.Name | Should -Not -Contain 'analyticsEnabled' -Because $contract.Key
+            $definition.parameters.outputs.deployAnalytics | Should -Be "[steps('content').deployAnalytics]" -Because $contract.Key
+
+            $template = Get-Content -LiteralPath $contract.Value.Template -Raw | ConvertFrom-Json -Depth 100
+            $template.parameters.PSObject.Properties.Name | Should -Not -Contain 'analyticsEnabled' -Because $contract.Key
+        }
+    }
+    It 'requires an explicit interaction content decision in both portal definitions' {
+        foreach ($name in 'greenfield', 'existing-workspace') {
+            $definition = Get-Content -LiteralPath (Join-Path $portalRoot "$name/createUiDefinition.json") -Raw | ConvertFrom-Json -Depth 100
+            $step = @($definition.parameters.steps | Where-Object name -eq 'interactionContent')
+            $step | Should -HaveCount 1 -Because $name
+            $choice = @($step[0].elements | Where-Object name -eq 'interactionContentCollection')
+            $choice | Should -HaveCount 1 -Because $name
+            $choice[0].type | Should -Be 'Microsoft.Common.DropDown'
+            $choice[0].constraints.required | Should -BeTrue
+            @($choice[0].constraints.allowedValues.value) | Should -Be @('', 'Disabled', 'Enabled') -Because "$name must start on an empty placeholder so nothing is preselected"
+            $choice[0].constraints.validations[0].isValid | Should -Match 'not\(empty\('
+
+            $scope = @($step[0].elements | Where-Object name -eq 'interactionCollectionScope')
+            @($scope[0].constraints.allowedValues.value) | Should -Be @('AllLicensedUsers', 'IncludeGroup', 'ExcludeGroup')
+            $scope[0].visible | Should -Match "equals\(steps\('interactionContent'\)\.interactionContentCollection, 'Enabled'\)"
+
+            $group = @($step[0].elements | Where-Object name -eq 'interactionCollectionGroupId')
+            $group[0].constraints.regex | Should -Be '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+
+            $outputs = $definition.parameters.outputs
+            $outputs.interactionContentCollection | Should -Be "[steps('interactionContent').interactionContentCollection]"
+            $outputs.interactionCollectorPackageUri | Should -Be "https://github.com/x3nc0n/m365-copilot-governance-foundation/releases/download/v$($outputs.solutionVersion)/released-package.zip"
+
+            $template = Get-Content -LiteralPath (Join-Path $script:RepositoryRoot "infra/compiled/$name.json") -Raw | ConvertFrom-Json -Depth 100
+            $parameter = $template.parameters.interactionContentCollection
+            $parameter.PSObject.Properties.Name | Should -Not -Contain 'defaultValue' -Because "$name must force an explicit choice"
+            @($parameter.allowedValues) | Should -Be @('Enabled', 'Disabled')
+        }
     }
 }

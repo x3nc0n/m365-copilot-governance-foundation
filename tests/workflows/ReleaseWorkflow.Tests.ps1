@@ -48,13 +48,24 @@ Describe 'Release workflow' {
             $script:Workflow,
             '(?ms)\$assets = @\((?<assets>.*?)\)'
         )
-        $uploadBlock = $assetBlocks[$assetBlocks.Count - 1].Groups['assets'].Value
+        $uploadBlock = $assetBlocks[1].Groups['assets'].Value
         $actualAssets = @(
             [regex]::Matches($uploadBlock, "'([^']+)'") |
                 ForEach-Object { $_.Groups[1].Value }
         )
         $actualAssets | Should -Be $script:ExpectedAssets
         @($actualAssets | Select-Object -Unique) | Should -HaveCount 6
+    }
+
+    It 'tests, packages, and uploads the Flex Consumption collector package' {
+        foreach ($workflow in $script:Workflow, $script:BuildWorkflow) {
+            $workflow | Should -Match 'actions/setup-dotnet@[0-9a-f]{40}'
+            $workflow | Should -Match "dotnet-version: '8\.0\.x'"
+            $workflow | Should -Match '\./build/New-CollectorPackage\.ps1'
+        }
+        $script:Workflow | Should -Match "'artifacts/released-package\.zip'"
+        $script:Workflow | Should -Match "'artifacts/released-package\.zip\.sha256'"
+        $script:Workflow | Should -Match 'gh release upload .* --clobber @collectorAssets'
     }
 
     It 'idempotently creates or updates the release and uploads with clobber' {

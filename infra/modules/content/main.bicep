@@ -15,8 +15,8 @@ param deployAnalytics bool = true
 @description('Whether workbook resources should be deployed.')
 param deployWorkbooks bool = true
 
-@description('Whether deployed analytic rules should be enabled.')
-param analyticsEnabled bool = false
+@description('Whether the interaction-content collector and its table are deployed. Content-dependent analytics deploy only when true.')
+param interactionContentEnabled bool = false
 
 @description('Sentinel onboarding-state properties resolved before content deployment. The object may be empty; the read fails when Sentinel is absent or unreadable.')
 param sentinelOnboardingStateProperties object
@@ -40,7 +40,7 @@ module analytics '../analytics/main.bicep' = {
   params: {
     workspaceResourceId: workspaceResourceId
     deployAnalytics: deployAnalytics
-    analyticsEnabled: analyticsEnabled
+    interactionContentEnabled: interactionContentEnabled
     analytics: contentManifest.analytics
   }
 }

@@ -45,18 +45,20 @@ Both paths call reusable modules and expose the frozen contracts documented in [
 
 ## Content model
 
-The MVP workbook set covers:
+The solution deploys one workbook with five tabs:
 
 1. governance overview and control ownership;
 2. native-alert correlation and investigation context;
 3. connector, table, parser, and ingestion data health;
-4. coverage, gaps, optional modules, and remediation.
+4. coverage, gaps, optional modules, and remediation;
+5. Copilot interaction content (populated only when collection is `Enabled`).
 
 Analytics must include owner, prerequisites, severity rationale, entity mapping, grouping/suppression, false-positive guidance, incident behavior, native links, and test instructions. Content must tolerate missing optional sources and explicitly label the resulting limitation.
 
+Prompt and response content collection is a required deployment decision; see [Interaction content collection](interaction-content.md).
+
 ## Default exclusions
 
-- `M365CopilotInteraction_CL`
 - custom prompt regex or Sensitive Information Type classification
 - duplicate DLP or Communication Compliance policy logic
 - duplicate insider-risk or identity-risk scoring

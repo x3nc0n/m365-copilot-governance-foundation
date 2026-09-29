@@ -2,6 +2,29 @@
 
 All notable changes are documented here. The project follows [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2026-09-29
+
+### Breaking
+
+- `interactionContentCollection` is a new **required** parameter (`Enabled` or `Disabled`, no default) on both entry points and in the Deploy to Azure experience. Existing parameter files must add it.
+- Removed the `analyticsEnabled` parameter. Remove it from existing parameter files. Redeploying resets solution rules to disabled; re-enable reviewed rules in Sentinel afterward.
+
+### Added
+
+- Opt-in Microsoft 365 Copilot prompt and response content collection: Microsoft Graph interaction export API to a Flex Consumption .NET 8 Azure Function with a user-assigned managed identity, Logs Ingestion through a `Direct` data collection rule, and `M365GovCopilotInteractionContent_CL` with 90-day retention. Scopes: all licensed users, include group, or exclude group.
+- `Initialize-CollectorIdentity.ps1` now grants the collector's Microsoft Graph application roles (`AiEnterpriseInteraction.Read.All`, `User.Read.All`, and `GroupMember.Read.All` for group scopes) with `-WhatIf`/`-Confirm` support and no implicit sign-in.
+- Interaction Content workbook tab and the `M365Gov-InteractionContent-NativeOutcome` analytic, which is installed only when collection is enabled and alerts only on Microsoft-provided jailbreak, cross-prompt injection, and Purview policy outcomes.
+- Release asset `released-package.zip` (with SHA-256 file) for the collector.
+
+### Changed
+
+- Removed the misleading deployment-time analytics enable option. `deployAnalytics` still controls whether rules are installed, and generated ARM always creates them with `enabled: false` for manual operator review and activation in Sentinel.
+- Consolidated the four Sentinel workbooks into one `m365gov-governance` workbook with Overview, Native Alert Correlation, Data Health, Coverage and Gaps, and Interaction Content tabs. Existing deployments retain the prior workbook resources until an operator removes them.
+
+### Fixed
+
+- Split the `M365Gov_DataHealth` age and status calculations so KQL resolves `Age` before using it to classify stale sources.
+
 ## [0.1.4] - 2026-09-23
 
 ### Fixed

@@ -37,13 +37,13 @@ Azure Portal fetches the template and `createUiDefinition` cross-origin. A GitHu
 The portal links must use the immutable raw tagged files under:
 
 ```text
-https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.4/generated/release-assets/<asset>
+https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.2.0/generated/release-assets/<asset>
 ```
 
 Verify all four responses anonymously:
 
 ```powershell
-$baseUri = 'https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.1.4/generated/release-assets'
+$baseUri = 'https://raw.githubusercontent.com/x3nc0n/m365-copilot-governance-foundation/v0.2.0/generated/release-assets'
 $assets = @(
   'greenfield.json'
   'greenfield.createUiDefinition.json'
@@ -72,7 +72,7 @@ Immutable release download URLs require three separate GitHub objects: the tag, 
 
 ```powershell
 $Repository = 'x3nc0n/m365-copilot-governance-foundation'
-$Tag = 'v0.1.4'
+$Tag = 'v0.2.0'
 
 # 1. Confirm that the Git tag exists.
 gh api "repos/$Repository/git/ref/tags/$Tag"
@@ -92,7 +92,7 @@ Test the public path without GitHub CLI credentials, then verify the downloaded 
 
 ```powershell
 $Repository = 'x3nc0n/m365-copilot-governance-foundation'
-$Tag = 'v0.1.4'
+$Tag = 'v0.2.0'
 $Asset = 'greenfield.json'
 $BaseUri = "https://github.com/$Repository/releases/download/$Tag"
 
@@ -153,7 +153,15 @@ Use `Test-GraphAccess.ps1` and compare required versus effective permissions. Au
 
 ## Bootstrap does not change anything
 
-This is expected in v0.1.4. Without `-Bootstrap`, the command returns a skipped result. With `-Bootstrap`, preview with `-WhatIf`; a confirmed run still creates no identity or consent and returns a warning that the MVP preserves the human-controlled handoff. A denied confirmation or missing approval also leaves the tenant unchanged.
+Without `-Bootstrap`, `Initialize-CollectorIdentity.ps1` only reports the Graph role plan. With `-Bootstrap`, it requires an existing `Connect-MgGraph` session (it never signs in implicitly), and `-WhatIf` or a denied confirmation leaves the tenant unchanged. Exit code `2` indicates invalid input or a missing session; `3` indicates a Graph operational error such as insufficient admin rights.
+
+## Interaction content table is empty
+
+- Confirm the deployment used `interactionContentCollection = 'Enabled'` and the `onedeploy` extension succeeded; rerun the same deployment if package deployment failed on first run.
+- Confirm the bootstrap granted `AiEnterpriseInteraction.Read.All` and `User.Read.All` (plus `GroupMember.Read.All` for group scopes).
+- Check the collector's Application Insights for Graph `403` responses or ingestion failures. The checkpoint does not advance until a window succeeds.
+- Allow at least 90 minutes: the collector runs hourly with a 30-minute lag.
+- Confirm in-scope users hold an enabled Microsoft 365 Copilot license.
 
 ## Workbook is empty
 

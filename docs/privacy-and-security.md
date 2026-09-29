@@ -2,9 +2,9 @@
 
 ## Default boundary
 
-The foundation processes governance metadata and supported native alerts, incidents, audit, identity, application, and operational-health signals. It excludes Microsoft 365 Copilot prompt and response content by default.
+The foundation processes governance metadata and supported native alerts, incidents, audit, identity, application, and operational-health signals. Microsoft 365 Copilot prompt and response content is collected only when a deployment explicitly sets the required `interactionContentCollection` parameter to `Enabled`; there is no default. See [Interaction content collection](interaction-content.md).
 
-`M365CopilotInteraction_CL` is not part of the default architecture. Any future interaction export is an exceptional module requiring:
+Before choosing `Enabled`, the customer must have:
 
 - a documented coverage gap and purpose;
 - privacy/legal and security approval;
@@ -21,7 +21,7 @@ The foundation processes governance metadata and supported native alerts, incide
 - Do not commit customer watchlists, tenant IDs, identities, exports, tokens, prompts, or responses.
 - Use synthetic samples.
 - Redact support and CI output.
-- Keep optional collection disabled by default.
+- Require an explicit decision before collecting prompt and response content, and keep other optional collection disabled by default.
 
 The [data-table catalog](data-tables.md) documents sensitivity and fallback behavior. The [native-control matrix](native-control-matrix.md) identifies the authoritative owner.
 

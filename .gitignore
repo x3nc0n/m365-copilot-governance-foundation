@@ -14,3 +14,9 @@ build/test-results.xml
 build/.verify/
 /testResults.xml
 /build/test-results.xml
+
+# .NET collector build output
+bin/
+obj/
+*.user
+/artifacts/

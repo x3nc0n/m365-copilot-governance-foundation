@@ -1,0 +1,75 @@
+let outcomeWindow = 1h;
+let contentLookback = 2d;
+let copilotAudit =
+    union isfuzzy=true
+        (
+        datatable(TimeGenerated: datetime, RecordId: string, RecordType: string, ActorName: string, ActorUserId: string, AppHost: string, LLMEventData: dynamic)[]
+        ),
+        (
+        CopilotActivity
+        | where ingestion_time() > ago(outcomeWindow)
+        | project TimeGenerated, RecordId, RecordType, ActorName, ActorUserId, AppHost, LLMEventData
+        );
+let nativeOutcomes =
+    copilotAudit
+    | where RecordType == "CopilotInteraction"
+    | mv-apply Message = LLMEventData.Messages on (
+        summarize
+            MessageIds = make_set(tostring(Message.Id)),
+            FlaggedMessageIds = make_set_if(tostring(Message.Id), tobool(Message.JailbreakDetected))
+        )
+    | mv-apply Resource = LLMEventData.AccessedResources on (
+        summarize
+            XpiaResourceCount = countif(tobool(Resource.XPIADetected)),
+            PolicyResourceCount = countif(isnotempty(Resource.PolicyDetails))
+        )
+    | extend NativeOutcomes = set_difference(
+        pack_array(
+            iff(array_length(FlaggedMessageIds) > 0, "JailbreakDetected", ""),
+            iff(XpiaResourceCount > 0, "XPIADetected", ""),
+            iff(PolicyResourceCount > 0, "PurviewPolicyDetails", "")),
+        dynamic([""]))
+    | where array_length(NativeOutcomes) > 0;
+let interactionContent =
+    union isfuzzy=true
+        (
+        datatable(TimeGenerated: datetime, InteractionId: string, InteractionType: string, SessionId: string, AppClass: string)[]
+        ),
+        (
+        M365GovCopilotInteractionContent_CL
+        | where TimeGenerated > ago(contentLookback)
+        | project TimeGenerated, InteractionId, InteractionType, SessionId, AppClass
+        )
+    | summarize arg_max(TimeGenerated, *) by InteractionId;
+nativeOutcomes
+| mv-expand MessageId = MessageIds to typeof(string)
+| join kind=leftouter interactionContent on $left.MessageId == $right.InteractionId
+| summarize
+    TimeGenerated = max(TimeGenerated),
+    NativeOutcomes = take_any(NativeOutcomes),
+    ActorName = take_any(ActorName),
+    ActorUserId = take_any(ActorUserId),
+    AppHost = take_any(AppHost),
+    InteractionIds = make_set_if(InteractionId, isnotempty(InteractionId)),
+    SessionIds = make_set_if(SessionId, isnotempty(SessionId)),
+    AppClasses = make_set_if(AppClass, isnotempty(AppClass))
+    by RecordId
+| extend
+    ContentAvailable = array_length(InteractionIds) > 0,
+    AlertTitle = "Microsoft Purview reported a Copilot interaction outcome",
+    AlertDescription = "Microsoft Purview audit reported a native outcome on a Copilot interaction. Review the collected interaction content in the M365 Copilot Governance workbook using the listed interaction IDs; remediate in the native Microsoft product.",
+    AccountCustomEntity = ActorName
+| project
+    TimeGenerated,
+    AlertTitle,
+    AlertDescription,
+    RecordId,
+    NativeOutcomes,
+    ActorName,
+    ActorUserId,
+    AppHost,
+    ContentAvailable,
+    InteractionIds,
+    SessionIds,
+    AppClasses,
+    AccountCustomEntity

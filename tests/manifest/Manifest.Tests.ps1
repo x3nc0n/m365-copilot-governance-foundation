@@ -77,15 +77,15 @@ Describe 'Content manifest generation' {
     It 'contains the exact deployable content counts and required module properties' {
         $manifest = Get-Content -LiteralPath $script:Manifest -Raw | ConvertFrom-Json -Depth 100
         @($manifest.functions) | Should -HaveCount 4
-        @($manifest.analytics) | Should -HaveCount 3
-        @($manifest.workbooks) | Should -HaveCount 4
+        @($manifest.analytics) | Should -HaveCount 4
+        @($manifest.workbooks) | Should -HaveCount 1
 
         $functionProperties = @(
             'resourceName', 'displayName', 'query', 'functionAlias',
             'functionParameters', 'version', 'category', 'controlOwner'
         )
         $analyticProperties = @(
-            'resourceName', 'displayName', 'description', 'enabledByDefault', 'severity',
+            'resourceName', 'displayName', 'description', 'requiresInteractionContent', 'severity',
             'query', 'queryFrequency', 'queryPeriod', 'triggerOperator', 'triggerThreshold',
             'suppressionDuration', 'suppressionEnabled', 'eventGroupingAggregationKind',
             'incidentConfiguration', 'entityMappings', 'alertDetailsOverride', 'customDetails',
@@ -115,5 +115,26 @@ Describe 'Content manifest generation' {
             }
             { $entry.serializedData | ConvertFrom-Json -Depth 100 } | Should -Not -Throw
         }
+
+        $workbook = $manifest.workbooks[0].serializedData | ConvertFrom-Json -Depth 100
+        $tabLinks = @($workbook.items | Where-Object { $_.type -eq 11 -and $_.content.version -eq 'LinkItem/1.0' -and $_.content.style -eq 'tabs' })
+        $tabLinks | Should -HaveCount 1
+        @($tabLinks[0].content.links.linkLabel) | Should -Be @(
+            'Overview'
+            'Native Alert Correlation'
+            'Data Health'
+            'Coverage and Gaps'
+            'Interaction Content'
+        )
+        @($tabLinks[0].content.links.cellValue | Select-Object -Unique) | Should -Be @('Tab')
+
+        $groups = @($workbook.items | Where-Object type -eq 12)
+        $groups | Should -HaveCount 5
+        foreach ($group in $groups) {
+            $group.content.version | Should -Be 'NotebookGroup/1.0'
+            @($group.content.items) | Should -Not -BeNullOrEmpty
+            $group.conditionalVisibility.parameterName | Should -Be 'Tab'
+        }
+        @($groups.conditionalVisibility.value) | Should -Be @($tabLinks[0].content.links.subTarget)
     }
 }

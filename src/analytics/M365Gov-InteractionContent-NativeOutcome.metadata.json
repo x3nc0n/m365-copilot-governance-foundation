@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "ScheduledAnalyticsRule",
+  "name": "M365Gov-InteractionContent-NativeOutcome",
+  "displayName": "M365 Governance - Native Copilot Interaction Outcome with Content Context",
+  "enabled": false,
+  "requiresInteractionContent": true,
+  "severity": "Medium",
+  "queryFrequency": "PT1H",
+  "queryPeriod": "P2D",
+  "triggerOperator": "GreaterThan",
+  "triggerThreshold": 0,
+  "authoritativeControlOwner": {
+    "name": "Microsoft Purview Audit and Microsoft Purview Data Loss Prevention",
+    "sentinelRole": "Surfaces Microsoft-provided CopilotInteraction outcomes and links them to collected interaction IDs; it never classifies prompt or response text."
+  },
+  "nativePortalRoute": {
+    "label": "Microsoft Purview audit",
+    "uri": "https://purview.microsoft.com/audit/auditsearch"
+  },
+  "dependencies": [
+    {
+      "type": "table",
+      "name": "CopilotActivity",
+      "required": true,
+      "owner": "Microsoft Copilot data connector for Microsoft Sentinel"
+    },
+    {
+      "type": "table",
+      "name": "M365GovCopilotInteractionContent_CL",
+      "required": false,
+      "owner": "M365 Copilot Governance interaction-content collector (opt-in)"
+    }
+  ],
+  "freshness": {
+    "expected": "CopilotActivity connector latency plus the collector's hourly schedule and ingestion lag.",
+    "evaluationWindow": "Outcomes ingested in the last hour; content joined from the last two days."
+  },
+  "limitations": [
+    "Deployed only when interaction content collection is Enabled; installed disabled like every rule in this solution.",
+    "Alerts only on Microsoft-provided JailbreakDetected, XPIADetected, or Purview policy details in CopilotInteraction audit records.",
+    "Interaction content is linked by interaction ID for investigation and is never copied into alert fields.",
+    "ContentAvailable is false when the user is out of collection scope or the collector has not yet exported the interaction."
+  ],
+  "missingSourceBehavior": {
+    "mode": "no-incident-and-health-warning",
+    "description": "Without CopilotActivity the rule returns no results; use data health to confirm the connector before enabling."
+  },
+  "incidentConfiguration": {
+    "createIncident": true,
+    "grouping": "One alert per CopilotInteraction audit record.",
+    "suppression": "PT1H"
+  },
+  "entityMappings": [
+    {
+      "entityType": "Account",
+      "field": "AccountCustomEntity"
+    }
+  ],
+  "severityRationale": "Medium reflects a native Microsoft detection or policy outcome; the native product remains authoritative for severity.",
+  "falsePositiveGuidance": "Validate the outcome in Microsoft Purview, then review the linked interaction content under your organization's approved investigation process.",
+  "testQuery": "Run over an approved test window with a known CopilotInteraction audit record that carries a native outcome and confirm the interaction ID links to collected content.",
+  "privacy": {
+    "promptOrResponseContent": "Referenced by interaction ID only; content stays in the 90-day interaction table and is not written to alerts.",
+    "identityHandling": "Actor name and ID come from the Purview audit record.",
+    "usageAsMisconduct": "Prohibited without a separate approved investigation."
+  }
+}

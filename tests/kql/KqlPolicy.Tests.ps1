@@ -10,6 +10,13 @@ BeforeAll {
 }
 
 Describe 'Native-first KQL policy' {
+    It 'calculates data-health Age before using it to derive Status' {
+        $dataHealthPath = Join-Path $script:RepositoryRoot 'src/functions/M365Gov_DataHealth.kql'
+        $content = Get-Content -LiteralPath $dataHealthPath -Raw
+        $content | Should -Match '\|\s*extend\s+Age\s*=\s*now\(\)\s*-\s*LastEventTime\s*\r?\n\|\s*extend\s+Status\s*='
+        $content | Should -Not -Match '(?s)\|\s*extend\s+Age\s*=.*?,\s*Status\s*='
+    }
+
     It 'does not use the banned default interaction table' {
         foreach ($file in $script:KqlFiles) {
             Get-Content -LiteralPath $file.FullName -Raw | Should -Not -Match '\bM365CopilotInteraction_CL\b' -Because $file.FullName

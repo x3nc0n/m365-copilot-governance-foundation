@@ -80,6 +80,15 @@ jobs:
             throw 'Generated release assets do not match the exact tagged commit.'
           }
 
+      - name: Set up .NET 8 SDK
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Test and package collector
+        shell: pwsh
+        run: ./build/New-CollectorPackage.ps1
+
       - name: Create or update GitHub Release
         shell: pwsh
         env:
@@ -116,4 +125,13 @@ jobs:
           gh release upload $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --clobber @assets
           if ($LASTEXITCODE -ne 0) {
             throw "Unable to upload assets for release '$env:RELEASE_TAG'."
+          }
+
+          $collectorAssets = @(
+            'artifacts/released-package.zip'
+            'artifacts/released-package.zip.sha256'
+          )
+          gh release upload $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --clobber @collectorAssets
+          if ($LASTEXITCODE -ne 0) {
+            throw "Unable to upload collector package for release '$env:RELEASE_TAG'."
           }

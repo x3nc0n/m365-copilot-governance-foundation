@@ -19,7 +19,7 @@ Microsoft Sentinel is the correlation, visualization, tenant-context, ASIM-norma
 
 ## Implemented analytics
 
-All analytics ship **disabled by default**.
+Analytics rules are installed disabled when deployment is selected. The generated ARM templates always set `enabled: false`; operators must review prerequisites, data availability, and query behavior before configuring and enabling rules manually in Sentinel.
 
 | Analytic | Native signals | Authoritative owner | Sentinel value | Safety boundary |
 |---|---|---|---|---|
@@ -31,10 +31,7 @@ All analytics ship **disabled by default**.
 
 | Workbook | Purpose | Owner and route behavior |
 |---|---|---|
-| `m365gov-governance-overview` | Summarize control ownership and source health | Shows the native owner and route from `M365Gov_DataHealth` |
-| `m365gov-native-alert-correlation` | Display existing native alerts and shared entity context | Routes to the Microsoft Defender portal and originating product |
-| `m365gov-data-health` | Show freshness, silence, and connector investigation context | Routes operators to Microsoft Sentinel connectors and the source portal |
-| `m365gov-coverage-and-gaps` | Separate MVP coverage from optional/preview sources | Keeps missing sources visible as gaps and never equates absence with safety |
+| `m365gov-governance` | Combines overview, native-alert correlation, data health, coverage/gaps, and opt-in interaction content as five tabs | Shows native owners and routes, keeps missing sources visible as gaps, and never equates absence with safety |
 
 ## Coverage cautions
 

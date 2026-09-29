@@ -2,7 +2,7 @@
 
 This catalog describes the native tables that the Microsoft 365 Copilot governance foundation can consume. Table presence is conditional on licensing, connector configuration, tenant settings, cloud, region, permissions, and Microsoft service lifecycle. An absent or empty table is a **coverage state**, not evidence that no risk, audit, compliance, identity, or AI activity occurred.
 
-The default MVP does not create custom interaction or usage tables. Project functions and ASIM parsers are the stable consumer boundary where practical.
+The solution creates the custom interaction content table only when `interactionContentCollection` is `Enabled`; it does not create a usage table. Project functions and ASIM parsers are the stable consumer boundary where practical.
 
 ## Core and conditional native tables
 
@@ -53,9 +53,10 @@ Other Defender advanced-hunting tables can be added only when a workbook or anal
 - `CopilotActivity` is not automatically force-mapped to ASIM Agent Event. A parser can be introduced only after each required mapping is validated against current official semantics.
 - No project function exposes prompt text, response text, thought-process details, `LLMEventData`, or `NetworkAccessGenerativeAIInsights.Content`.
 
-## Excluded default custom tables
+## Solution-owned custom table
 
-- `M365CopilotInteraction_CL` is not part of the default architecture.
-- `M365CopilotUsage_CL` is not part of the default architecture.
+| Table | Created when | Retention | Contents | Caveats |
+|---|---|---|---|---|
+| `M365GovCopilotInteractionContent_CL` | `interactionContentCollection = 'Enabled'` | 90 days | Prompt and response text (`BodyContent`), attachments, contexts, links, mentions, session and request IDs, user, app, and collector run metadata from the Microsoft Graph interaction export API | Highly sensitive. At-least-once delivery; deduplicate by `InteractionId`. Text truncated at 30,000 UTF-8 bytes with flags. Excludes Copilot Studio agents. See [Interaction content collection](interaction-content.md). |
 
-See [Optional integrations](optional-integrations.md) for the exceptional approval and isolation requirements that apply before either pattern can be considered.
+`M365CopilotUsage_CL` is not part of the default architecture. See [Optional integrations](optional-integrations.md).
