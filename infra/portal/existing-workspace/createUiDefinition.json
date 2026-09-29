@@ -69,18 +69,101 @@
             "defaultValue": true
           },
           {
-            "name": "analyticsEnabled",
-            "type": "Microsoft.Common.CheckBox",
-            "label": "Enable analytic rules immediately (not recommended)",
-            "defaultValue": false,
-            "toolTip": "Leave disabled until source prerequisites, data availability, and expected query behavior are validated.",
-            "visible": "[steps('content').deployAnalytics]"
-          },
-          {
             "name": "deployWorkbooks",
             "type": "Microsoft.Common.CheckBox",
             "label": "Deploy workbooks",
             "defaultValue": true
+          }
+        ]
+      },
+      {
+        "name": "interactionContent",
+        "label": "Interaction content",
+        "elements": [
+          {
+            "name": "interactionContentNotice",
+            "type": "Microsoft.Common.InfoBox",
+            "visible": true,
+            "options": {
+              "icon": "Warning",
+              "text": "Required decision. Enabled deploys an Azure Function that exports Microsoft 365 Copilot prompt and response text from the Microsoft Graph interaction export API into the M365GovCopilotInteractionContent_CL table (90-day retention). Anyone who can read that table or the governance workbook can read the content. After deployment, a Global Administrator or Privileged Role Administrator must run scripts/Initialize-CollectorIdentity.ps1 to grant Microsoft Graph application permissions to the collector identity."
+            }
+          },
+          {
+            "name": "interactionContentCollection",
+            "type": "Microsoft.Common.DropDown",
+            "label": "Collect prompt and response content",
+            "defaultValue": "Choose Enabled or Disabled",
+            "toolTip": "There is no default. Choose Enabled to collect content or Disabled to deploy no collector.",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Choose Enabled or Disabled",
+                  "value": ""
+                },
+                {
+                  "label": "Disabled - do not collect content",
+                  "value": "Disabled"
+                },
+                {
+                  "label": "Enabled - collect content for 90 days",
+                  "value": "Enabled"
+                }
+              ],
+              "required": true,
+              "validations": [
+                {
+                  "isValid": "[not(empty(steps('interactionContent').interactionContentCollection))]",
+                  "message": "Choose Enabled or Disabled for prompt and response content collection."
+                }
+              ]
+            }
+          },
+          {
+            "name": "interactionContentChoiceMissing",
+            "type": "Microsoft.Common.InfoBox",
+            "visible": "[empty(steps('interactionContent').interactionContentCollection)]",
+            "options": {
+              "icon": "Error",
+              "text": "Choose Enabled or Disabled. Deployment validation rejects an empty choice."
+            }
+          },
+          {
+            "name": "interactionCollectionScope",
+            "type": "Microsoft.Common.DropDown",
+            "label": "Collection scope",
+            "defaultValue": "Everyone with a Copilot license",
+            "visible": "[equals(steps('interactionContent').interactionContentCollection, 'Enabled')]",
+            "toolTip": "Everyone means every user with an enabled Microsoft Copilot with Graph-grounded chat service plan.",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Everyone with a Copilot license",
+                  "value": "AllLicensedUsers"
+                },
+                {
+                  "label": "Only members of a group",
+                  "value": "IncludeGroup"
+                },
+                {
+                  "label": "Everyone except members of a group",
+                  "value": "ExcludeGroup"
+                }
+              ],
+              "required": true
+            }
+          },
+          {
+            "name": "interactionCollectionGroupId",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Microsoft Entra group object ID",
+            "visible": "[and(equals(steps('interactionContent').interactionContentCollection, 'Enabled'), not(equals(steps('interactionContent').interactionCollectionScope, 'AllLicensedUsers')))]",
+            "toolTip": "Object ID of the security group to include or exclude. Nested members are resolved transitively.",
+            "constraints": {
+              "required": true,
+              "regex": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "validationMessage": "Enter a group object ID GUID."
+            }
           }
         ]
       }
@@ -88,14 +171,17 @@
     "outputs": {
       "location": "[steps('workspace').workspaceSelector.location]",
       "solutionName": "m365CopilotGovernance",
-      "solutionVersion": "0.1.4",
+      "solutionVersion": "0.2.0",
       "resourceNamePrefix": "m365gov",
       "deployFunctions": "[steps('content').deployFunctions]",
       "deployAnalytics": "[steps('content').deployAnalytics]",
       "deployWorkbooks": "[steps('content').deployWorkbooks]",
-      "analyticsEnabled": "[steps('content').analyticsEnabled]",
       "tags": {},
-      "workspaceResourceId": "[steps('workspace').workspaceSelector.id]"
+      "workspaceResourceId": "[steps('workspace').workspaceSelector.id]",
+      "interactionContentCollection": "[steps('interactionContent').interactionContentCollection]",
+      "interactionCollectionScope": "[if(equals(steps('interactionContent').interactionContentCollection, 'Enabled'), steps('interactionContent').interactionCollectionScope, 'AllLicensedUsers')]",
+      "interactionCollectionGroupId": "[if(and(equals(steps('interactionContent').interactionContentCollection, 'Enabled'), not(equals(steps('interactionContent').interactionCollectionScope, 'AllLicensedUsers'))), steps('interactionContent').interactionCollectionGroupId, '')]",
+      "interactionCollectorPackageUri": "https://github.com/x3nc0n/m365-copilot-governance-foundation/releases/download/v0.2.0/released-package.zip"
     }
   }
 }

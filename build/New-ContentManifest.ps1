@@ -50,7 +50,7 @@ function Get-ContentEntries {
             id           = [string]$metadata.name
             resourceName = [string]$metadata.name
             displayName  = [string]$metadata.displayName
-            version      = '0.1.4'
+            version      = '0.2.0'
             source       = ConvertTo-RepositoryPath -Path $sourcePath -RepositoryRoot $RepositoryRoot
             metadata     = ConvertTo-RepositoryPath -Path $metadataFile.FullName -RepositoryRoot $RepositoryRoot
             sha256       = Get-NormalizedTextSha256 -Path $sourcePath
@@ -103,7 +103,7 @@ function Get-ContentEntries {
                 sha256                           = $common.sha256
                 controlOwner                     = $common.controlOwner
                 description                      = (@($metadata.limitations) -join ' ')
-                enabledByDefault                 = [bool]$metadata.enabled
+                requiresInteractionContent       = [bool]($metadata.PSObject.Properties.Name -contains 'requiresInteractionContent' -and $metadata.requiresInteractionContent)
                 severity                         = [string]$metadata.severity
                 query                            = $sourceRaw.TrimEnd()
                 queryFrequency                   = [string]$metadata.queryFrequency
@@ -175,7 +175,7 @@ do {
 
 $manifest = [ordered]@{
     schemaVersion   = '1.0.0'
-    solutionVersion = '0.1.4'
+    solutionVersion = '0.2.0'
     functions       = @(Get-ContentEntries -Kind functions)
     analytics       = @(Get-ContentEntries -Kind analytics)
     workbooks       = @(Get-ContentEntries -Kind workbooks)

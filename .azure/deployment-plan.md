@@ -706,7 +706,7 @@ The screenshot reviewed on September 22, 2026 shows the generic ARM parameter bl
 6. Keep only meaningful choices visible:
    - Deploy KQL functions
    - Deploy analytic rules
-   - Enable analytic rules immediately, default `false`, with the existing prerequisite warning
+   - Analytic rules are created disabled; operators review prerequisites and enable them manually in Sentinel
    - Deploy workbooks
 7. Keep fixed/internal parameters out of the form:
    - `solutionName`: fixed output
@@ -764,10 +764,9 @@ The custom UI outputs must map every ARM parameter exactly:
 | `deployFunctions` | Visible content checkbox |
 | `deployAnalytics` | Visible content checkbox |
 | `deployWorkbooks` | Visible content checkbox |
-| `analyticsEnabled` | Visible content checkbox, default `false` |
 | `tags` | Fixed `{}` |
 
-Do not remove public Bicep parameters merely to hide them in the portal. CLI, PowerShell, and direct ARM consumers retain the existing parameter contract; CreateUiDefinition controls only what the portal asks the user to enter.
+The `deployAnalytics` parameter controls only whether rule resources are installed. Every installed analytic rule is created with `enabled: false`; there is no deployment-time enable parameter. Operators review source prerequisites, data availability, and query behavior, then configure and enable rules manually in Sentinel.
 
 ### Implementation and validation plan
 
@@ -798,7 +797,7 @@ Before marking the candidate validated or released:
 3. Verify no Region/Location control is shown and the ARM output location equals the selected workspace location.
 4. Verify the workspace selector shows only `Microsoft.OperationalInsights/workspaces` in the selected subscription, supports search by workspace/resource-group name, and returns the correct full resource ID.
 5. Test a Sentinel-enabled workspace, a Log Analytics workspace without Sentinel, and a workspace the tester cannot read fully. Confirm the UI message and authoritative deployment/preflight behavior are distinct and actionable.
-6. Verify all four combinations of the content checkboxes and confirm analytics remain disabled by default.
+6. Verify the content deployment combinations and confirm rules are absent when `deployAnalytics` is false and have `enabled: false` when installed. Enabling after review is a manual Sentinel operation, not a deployment parameter.
 7. Open the actual immutable `v0.1.1` Deploy to Azure link, not only the Sandbox, and confirm the primary button loads the custom picker experience rather than the generic parameter blade.
 8. Run resource-group deployment `validate` and `what-if` against the selected existing workspace. Do not run `create` without separate deployment authorization.
 9. Re-run live anonymous CORS/JSON checks for the tagged template and UI-definition URLs.
@@ -823,7 +822,7 @@ Implemented:
 - Replaced the existing-workspace resource-ID text box with `Microsoft.Solutions.ResourceSelector` constrained to `Microsoft.OperationalInsights/workspaces`, the Basics subscription, and all workspace locations.
 - Configured the built-in Basics resource-group picker to allow existing groups and hid its location control; no custom location control remains.
 - Derived `workspaceResourceId` and `location` from the selected workspace and emitted fixed `solutionName`, `solutionVersion`, `resourceNamePrefix`, and `tags` values without editable controls.
-- Kept the four content toggles visible and logically ordered. `analyticsEnabled` defaults to `false` and is shown only when analytic-rule deployment is selected.
+- Kept the three deployment toggles visible and logically ordered. The analytic-rule toggle controls resource installation only; all installed rules remain disabled for manual review and activation in Sentinel.
 - Recorded the official selector limitation in the UI and documentation: its supported filter surface is subscription and location only, so it cannot filter on `Microsoft.SecurityInsights/onboardingStates/default`.
 - Added an authoritative pre-content onboarding-state read by passing `sentinelOnboardingState.properties.customerManagedKey` into the nested content deployment. A missing or unreadable onboarding state prevents the content deployment from starting.
 - Updated the primary existing-workspace Deploy to Azure URL to include its matching `createUIDefinitionUri`.

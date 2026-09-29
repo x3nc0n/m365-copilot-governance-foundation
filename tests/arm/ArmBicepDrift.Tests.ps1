@@ -134,11 +134,44 @@ Describe 'ARM and Bicep drift' {
             @($contentManifest.analytics | Where-Object { @($_.entityMappings).Count -eq 0 }) |
                 Should -HaveCount 1
             @($contentManifest.analytics | Where-Object { @($_.entityMappings).Count -gt 0 }) |
-                Should -HaveCount 2
+                Should -HaveCount 3
         }
     }
 
-    It 'embeds four functions, three analytics, and four workbooks with deployable properties' {
+    It 'omits the analytics-enable parameter and always emits installed rules disabled' {
+        $contracts = @{
+            'greenfield' = @{
+                Source = 'infra/greenfield/main.bicep'
+                Template = 'infra/compiled/greenfield.json'
+            }
+            'existing-workspace' = @{
+                Source = 'infra/existing-workspace/main.bicep'
+                Template = 'infra/compiled/existing-workspace.json'
+            }
+        }
+
+        foreach ($contract in $contracts.GetEnumerator()) {
+            $source = Get-Content -LiteralPath (Join-Path $script:RepositoryRoot $contract.Value.Source) -Raw
+            $source | Should -Not -Match '\banalyticsEnabled\b' -Because $contract.Key
+
+            $templateRaw = Get-Content -LiteralPath (Join-Path $script:RepositoryRoot $contract.Value.Template) -Raw
+            $templateRaw | Should -Not -Match 'analyticsEnabled' -Because $contract.Key
+            $template = $templateRaw | ConvertFrom-Json -Depth 100
+            $analyticResources = @(
+                Get-NestedArmResource -Template $template |
+                    Where-Object type -eq 'Microsoft.SecurityInsights/alertRules'
+            )
+            $analyticResources | Should -HaveCount 1 -Because $contract.Key
+            foreach ($resource in $analyticResources) {
+                $resource.copy.count | Should -Be "[length(parameters('analytics'))]" -Because $contract.Key
+                $resource.condition | Should -Be "[and(parameters('deployAnalytics'), or(not(parameters('analytics')[copyIndex()].requiresInteractionContent), parameters('interactionContentEnabled')))]" -Because $contract.Key
+                $resource.properties | Should -Match "'enabled', false\(\)" -Because $contract.Key
+                $resource.properties | Should -Not -Match 'enabledByDefault|analyticsEnabled' -Because $contract.Key
+            }
+        }
+    }
+
+    It 'embeds four functions, four analytics, and one tabbed workbook with deployable properties' {
         $compiledTemplates = @(
             'infra/compiled/greenfield.json'
             'infra/compiled/existing-workspace.json'
@@ -146,7 +179,7 @@ Describe 'ARM and Bicep drift' {
         $requiredProperties = @{
             functions = @('resourceName', 'displayName', 'query', 'functionAlias', 'functionParameters', 'version', 'category', 'controlOwner')
             analytics = @(
-                'resourceName', 'displayName', 'description', 'enabledByDefault', 'severity', 'query',
+                'resourceName', 'displayName', 'description', 'requiresInteractionContent', 'severity', 'query',
                 'queryFrequency', 'queryPeriod', 'triggerOperator', 'triggerThreshold',
                 'suppressionDuration', 'suppressionEnabled', 'eventGroupingAggregationKind',
                 'incidentConfiguration', 'entityMappings', 'alertDetailsOverride', 'customDetails',
@@ -156,8 +189,8 @@ Describe 'ARM and Bicep drift' {
         }
         $expectedCounts = @{
             functions = 4
-            analytics = 3
-            workbooks = 4
+            analytics = 4
+            workbooks = 1
         }
 
         foreach ($relativePath in $compiledTemplates) {
@@ -182,6 +215,29 @@ Describe 'ARM and Bicep drift' {
                         $entry.PSObject.Properties.Name | Should -Contain $property -Because "$relativePath $kind entries must satisfy the module contract"
                     }
                 }
+            }
+        }
+    }
+    It 'deploys the interaction content collector only when explicitly enabled' {
+        $module = Get-Content -LiteralPath (Join-Path $script:RepositoryRoot 'infra/modules/interaction-collector/main.bicep') -Raw
+        $module | Should -Match "M365GovCopilotInteractionContent_CL"
+        $module | Should -Match 'var retentionInDays = 90'
+        $module | Should -Match 'totalRetentionInDays:\s*retentionInDays'
+        $module | Should -Match "kind:\s*'Direct'"
+        $module | Should -Match 'allowSharedKeyAccess:\s*false'
+        $module | Should -Match "Microsoft\.ManagedIdentity/userAssignedIdentities"
+        $module | Should -Match "name:\s*'onedeploy'"
+        $module | Should -Match 'FlexConsumption'
+        $module | Should -Match 'DisableLocalAuth:\s*true'
+
+        foreach ($name in 'greenfield', 'existing-workspace') {
+            $template = Get-Content -LiteralPath (Join-Path $script:RepositoryRoot "infra/compiled/$name.json") -Raw | ConvertFrom-Json -Depth 100
+            $collector = @($template.resources | Where-Object { $_.type -eq 'Microsoft.Resources/deployments' -and $_.name -match 'interaction-collector' })
+            $collector | Should -HaveCount 1 -Because $name
+            $collector[0].condition | Should -Be "[variables('interactionContentEnabled')]" -Because $name
+            $template.variables.interactionContentEnabled | Should -Be "[equals(parameters('interactionContentCollection'), 'Enabled')]"
+            foreach ($output in 'interactionContentCollection', 'interactionCollectorPrincipalId', 'interactionCollectorResourceIds') {
+                $template.outputs.PSObject.Properties.Name | Should -Contain $output -Because $name
             }
         }
     }

@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "AzureWorkbook",
+  "name": "m365gov-governance",
+  "displayName": "M365 Copilot Governance",
+  "authoritativeControlOwner": {
+    "name": "Multiple Microsoft native control planes",
+    "sentinelRole": "Summary, correlation, operational health, coverage, and native investigation routing"
+  },
+  "nativePortalRoute": {
+    "label": "Microsoft Sentinel",
+    "uri": "https://portal.azure.com/#view/Microsoft_Azure_Security_Insights/WorkspaceSelectorBlade"
+  },
+  "dependencies": [
+    {
+      "type": "function",
+      "name": "M365Gov_DataHealth",
+      "required": true
+    },
+    {
+      "type": "function",
+      "name": "M365Gov_NativeAlerts",
+      "required": true
+    },
+    {
+      "type": "table",
+      "name": "M365GovCopilotInteractionContent_CL",
+      "required": false
+    }
+  ],
+  "freshness": {
+    "expected": "Uses per-source data-health thresholds and a 24-hour native-alert display window.",
+    "defaultLookback": "PT24H"
+  },
+  "limitations": [
+    "Sentinel-visible coverage does not represent every licensed, configured, or effective native control.",
+    "Entity correlation depends on identifiers supplied by native alert providers.",
+    "The Interaction Content tab displays prompt and response text only when collection was deployed as Enabled; workbook access cannot be restricted per tab."
+  ],
+  "missingSourceBehavior": {
+    "mode": "show-status-and-gaps",
+    "description": "Missing and silent sources remain visible as coverage gaps; empty alert views are not evidence that no alerts exist."
+  }
+}

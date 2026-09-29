@@ -9,7 +9,7 @@ param solutionName string = 'm365CopilotGovernance'
 
 @minLength(1)
 @description('Solution content version.')
-param solutionVersion string = '0.1.4'
+param solutionVersion string = '0.2.0'
 
 @minLength(1)
 @maxLength(32)
@@ -25,11 +25,29 @@ param deployAnalytics bool = true
 @description('Whether workbook resources should be deployed.')
 param deployWorkbooks bool = true
 
-@description('Whether deployed analytic rules should be enabled.')
-param analyticsEnabled bool = false
-
 @description('Resource tags applied where supported.')
 param tags object = {}
+
+@allowed([
+  'Enabled'
+  'Disabled'
+])
+@description('Required decision: Enabled deploys the collector that exports Microsoft 365 Copilot prompt and response content into the workspace for 90 days. Disabled deploys no collector.')
+param interactionContentCollection string
+
+@allowed([
+  'AllLicensedUsers'
+  'IncludeGroup'
+  'ExcludeGroup'
+])
+@description('Users whose interactions are collected: every Copilot-licensed user, only members of a group, or every licensed user except members of a group.')
+param interactionCollectionScope string = 'AllLicensedUsers'
+
+@description('Microsoft Entra group object ID. Required when interactionCollectionScope is IncludeGroup or ExcludeGroup.')
+param interactionCollectionGroupId string = ''
+
+@description('HTTPS URL of the collector released-package.zip. Empty deploys collector infrastructure without code.')
+param interactionCollectorPackageUri string = 'https://github.com/x3nc0n/m365-copilot-governance-foundation/releases/download/v${solutionVersion}/released-package.zip'
 
 @minLength(4)
 @maxLength(63)
@@ -44,6 +62,7 @@ param workspaceSku string = 'PerGB2018'
 @description('Workspace retention in days.')
 param workspaceRetentionInDays int = 30
 
+var interactionContentEnabled = interactionContentCollection == 'Enabled'
 var solutionTags = union(tags, {
   Solution: solutionName
   SolutionVersion: solutionVersion
@@ -69,6 +88,21 @@ module sentinel '../modules/sentinel/main.bicep' = {
   }
 }
 
+module interactionCollector '../modules/interaction-collector/main.bicep' = if (interactionContentEnabled) {
+  name: '${resourceNamePrefix}-interaction-collector'
+  params: {
+    location: location
+    workspaceLocation: workspace.outputs.workspaceLocation
+    workspaceResourceId: workspace.outputs.workspaceResourceId
+    resourceNamePrefix: resourceNamePrefix
+    collectionScope: interactionCollectionScope
+    collectionGroupId: interactionCollectionGroupId
+    packageUri: interactionCollectorPackageUri
+    solutionVersion: solutionVersion
+    tags: solutionTags
+  }
+}
+
 module content '../modules/content/main.bicep' = {
   name: '${resourceNamePrefix}-content'
   params: {
@@ -77,10 +111,13 @@ module content '../modules/content/main.bicep' = {
     deployFunctions: deployFunctions
     deployAnalytics: deployAnalytics
     deployWorkbooks: deployWorkbooks
-    analyticsEnabled: analyticsEnabled
+    interactionContentEnabled: interactionContentEnabled
     sentinelOnboardingStateProperties: sentinel.outputs.sentinelOnboardingStateProperties
     tags: solutionTags
   }
+  dependsOn: [
+    interactionCollector
+  ]
 }
 
 output solutionVersion string = solutionVersion
@@ -90,10 +127,14 @@ output sentinelOnboardingStateResourceId string = sentinel.outputs.sentinelOnboa
 output functionResourceIds array = content.outputs.functionResourceIds
 output analyticRuleResourceIds array = content.outputs.analyticRuleResourceIds
 output workbookResourceIds array = content.outputs.workbookResourceIds
+output interactionContentCollection string = interactionContentCollection
+output interactionCollectorPrincipalId string = interactionContentEnabled ? interactionCollector!.outputs.managedIdentityPrincipalId : ''
+output interactionCollectorResourceIds array = interactionContentEnabled ? interactionCollector!.outputs.deployedResourceIds : []
 output deployedResourceIds array = concat(
   [
     workspace.outputs.workspaceResourceId
     sentinel.outputs.sentinelOnboardingStateResourceId
   ],
-  content.outputs.deployedResourceIds
+  content.outputs.deployedResourceIds,
+  interactionContentEnabled ? interactionCollector!.outputs.deployedResourceIds : []
 )

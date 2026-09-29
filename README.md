@@ -1,11 +1,11 @@
 # Microsoft 365 Copilot Governance Foundation
 
-[![Version](https://img.shields.io/badge/version-0.1.4-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.2.0-blue)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A native-first, open-source reference implementation for adding Microsoft Sentinel correlation, visibility, investigation routing, and data-health monitoring to a Microsoft 365 Copilot governance program.
 
-> **MVP status:** Version 0.1.4 is a reference architecture. Review every parameter, permission, connector, rule, retention setting, and cost assumption before production use. Publish the `v0.1.4` tag and GitHub Release before using the immutable deployment URLs below.
+> **MVP status:** Version 0.2.0 is a reference architecture. Review every parameter, permission, connector, rule, retention setting, and cost assumption before production use. Publish the `v0.2.0` tag and GitHub Release before using the immutable deployment URLs below.
 
 ## Purpose
 
@@ -19,7 +19,7 @@ Microsoft Purview, Microsoft Defender, Microsoft Entra, Microsoft 365 reporting,
 
 ### Non-goals
 
-This project does **not** recreate DLP, DSPM, Insider Risk Management, Communication Compliance, eDiscovery, retention, identity-risk scoring, or Defender detections. It does not classify prompts with custom regular expressions, treat high Copilot usage as suspicious, ingest prompt/response content by default, grant tenant consent automatically, or provide a custom web application or always-on collector.
+This project does **not** recreate DLP, DSPM, Insider Risk Management, Communication Compliance, eDiscovery, retention, identity-risk scoring, or Defender detections. It does not classify prompts with custom regular expressions, treat high Copilot usage as suspicious, ingest prompt/response content without an explicit deployment decision, grant tenant consent automatically, or provide a custom web application.
 
 See [Architecture](docs/architecture.md), the Neo-owned [native-control ownership matrix](docs/native-control-matrix.md), and [data-table catalog](docs/data-tables.md).
 
@@ -117,14 +117,14 @@ Confirm that only expected solution resources will change. See [Deployment](docs
 
 ### Deploy to Azure
 
-The buttons follow the [Microsoft Deploy to Azure guidance](https://learn.microsoft.com/azure/azure-resource-manager/templates/deploy-to-azure-button) by using URL-encoded raw GitHub URLs. The URLs are pinned to the immutable `v0.1.4` tag and return the cross-origin headers that Azure Portal requires after that release is published.
+The buttons follow the [Microsoft Deploy to Azure guidance](https://learn.microsoft.com/azure/azure-resource-manager/templates/deploy-to-azure-button) by using URL-encoded raw GitHub URLs. The URLs are pinned to the immutable `v0.2.0` tag and return the cross-origin headers that Azure Portal requires after that release is published.
 
 | Path | Template | Portal UI |
 |---|---|---|
-| Greenfield | [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fx3nc0n%2Fm365-copilot-governance-foundation%2Fv0.1.4%2Fgenerated%2Frelease-assets%2Fgreenfield.json) | [Open custom deployment](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fx3nc0n%2Fm365-copilot-governance-foundation%2Fv0.1.4%2Fgenerated%2Frelease-assets%2Fgreenfield.json/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2Fx3nc0n%2Fm365-copilot-governance-foundation%2Fv0.1.4%2Fgenerated%2Frelease-assets%2Fgreenfield.createUiDefinition.json) |
-| Existing workspace | [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fx3nc0n%2Fm365-copilot-governance-foundation%2Fv0.1.4%2Fgenerated%2Frelease-assets%2Fexisting-workspace.json/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2Fx3nc0n%2Fm365-copilot-governance-foundation%2Fv0.1.4%2Fgenerated%2Frelease-assets%2Fexisting-workspace.createUiDefinition.json) | [Open custom deployment](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fx3nc0n%2Fm365-copilot-governance-foundation%2Fv0.1.4%2Fgenerated%2Frelease-assets%2Fexisting-workspace.json/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2Fx3nc0n%2Fm365-copilot-governance-foundation%2Fv0.1.4%2Fgenerated%2Frelease-assets%2Fexisting-workspace.createUiDefinition.json) |
+| Greenfield | [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fx3nc0n%2Fm365-copilot-governance-foundation%2Fv0.2.0%2Fgenerated%2Frelease-assets%2Fgreenfield.json) | [Open custom deployment](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fx3nc0n%2Fm365-copilot-governance-foundation%2Fv0.2.0%2Fgenerated%2Frelease-assets%2Fgreenfield.json/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2Fx3nc0n%2Fm365-copilot-governance-foundation%2Fv0.2.0%2Fgenerated%2Frelease-assets%2Fgreenfield.createUiDefinition.json) |
+| Existing workspace | [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fx3nc0n%2Fm365-copilot-governance-foundation%2Fv0.2.0%2Fgenerated%2Frelease-assets%2Fexisting-workspace.json/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2Fx3nc0n%2Fm365-copilot-governance-foundation%2Fv0.2.0%2Fgenerated%2Frelease-assets%2Fexisting-workspace.createUiDefinition.json) | [Open custom deployment](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fx3nc0n%2Fm365-copilot-governance-foundation%2Fv0.2.0%2Fgenerated%2Frelease-assets%2Fexisting-workspace.json/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2Fx3nc0n%2Fm365-copilot-governance-foundation%2Fv0.2.0%2Fgenerated%2Frelease-assets%2Fexisting-workspace.createUiDefinition.json) |
 
-The existing-workspace flow uses the portal's built-in subscription and resource-group controls, then presents a filtered Log Analytics workspace picker. It derives workbook location from the selected workspace and keeps analytics disabled by default. The picker cannot filter on the Sentinel onboarding child resource, so confirm Sentinel is enabled; the deployment performs an onboarding-state read before deploying content.
+The existing-workspace flow uses the portal's built-in subscription and resource-group controls, then presents a filtered Log Analytics workspace picker. It derives workbook location from the selected workspace. `deployAnalytics` controls whether rules are installed; installed rules are always disabled until an operator reviews and manually enables them in Sentinel. The picker cannot filter on the Sentinel onboarding child resource, so confirm Sentinel is enabled; the deployment performs an onboarding-state read before deploying content.
 
 Raw tagged assets are the Azure Portal transport because they allow cross-origin retrieval. GitHub Release assets remain the human-download and supply-chain channel for checksums, manifests, and provenance. Before deployment, [verify the portal response headers and every published release asset](docs/release.md#verify-the-portal-assets), including JSON parsing and SHA-256 checks. Moving-branch URLs are intentionally unsupported.
 
@@ -132,9 +132,9 @@ Raw tagged assets are the Azure Portal transport because they allow cross-origin
 
 1. Read [privacy and security boundaries](docs/privacy-and-security.md).
 2. Run offline/static repository tests.
-3. Run `Invoke-M365CopilotGovernance.ps1 -Command All` for offline validation. In v0.1.4, `-Online` does not authenticate or query a tenant; it returns a warning and hands off to separately authorized live validation.
+3. Run `Invoke-M365CopilotGovernance.ps1 -Command All` for offline validation. In v0.2.0, `-Online` does not authenticate or query a tenant; it returns a warning and hands off to separately authorized live validation.
 4. Review every warning, skipped check, permission gap, unsupported source, and license dependency.
-5. If collector-identity setup is being planned, run `Initialize-CollectorIdentity.ps1 -Bootstrap -WhatIf`. The v0.1.4 command validates the safety boundary but intentionally creates no identity or consent.
+5. If `interactionContentCollection` is `Enabled`, grant the collector's Microsoft Graph application roles with `Initialize-CollectorIdentity.ps1 -Bootstrap -ManagedIdentityPrincipalId <interactionCollectorPrincipalId> -WhatIf`, then `-Confirm`. See [Interaction content collection](docs/interaction-content.md).
 6. Obtain administrator consent and privacy/legal approval outside the scripts.
 7. Run Azure deployment validation and `-WhatIf`.
 8. Deploy only after the result matches the intended scope.
@@ -176,8 +176,8 @@ Function, analytic, and workbook metadata are validated against the schemas unde
 
 ## Privacy boundaries
 
-- Prompt and response content is excluded by default.
-- `M365CopilotInteraction_CL` is not part of the default architecture.
+- Every deployment must explicitly choose `interactionContentCollection` = `Enabled` or `Disabled`. When `Enabled`, prompt and response content is collected into `M365GovCopilotInteractionContent_CL` for 90 days and shown in the workbook's Interaction Content tab. See [Interaction content collection](docs/interaction-content.md).
+- Content-dependent analytics use only Microsoft-provided outcomes and never copy prompt or response text into alerts.
 - `M365CopilotUsage_CL`, when enabled, is an optional reporting cache and is not a risk signal by itself.
 - Public templates contain no customer watchlist data, identities, tenant IDs, tokens, or exports.
 - Workbooks favor metadata and native portal deep links over copied sensitive content.

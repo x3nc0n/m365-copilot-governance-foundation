@@ -7,7 +7,7 @@
   "required": [ "schemaVersion", "solutionVersion", "functions", "analytics", "workbooks" ],
   "properties": {
     "schemaVersion": { "const": "1.0.0" },
-    "solutionVersion": { "const": "0.1.4" },
+    "solutionVersion": { "const": "0.2.0" },
     "functions": {
       "type": "array",
       "items": { "$ref": "#/$defs/function" }
@@ -102,7 +102,7 @@
       "additionalProperties": false,
       "required": [
         "id", "resourceName", "displayName", "version", "source", "metadata", "sha256",
-        "controlOwner", "description", "enabledByDefault", "severity", "query",
+        "controlOwner", "description", "requiresInteractionContent", "severity", "query",
         "queryFrequency", "queryPeriod", "triggerOperator", "triggerThreshold",
         "suppressionDuration", "suppressionEnabled", "eventGroupingAggregationKind",
         "incidentConfiguration", "entityMappings", "alertDetailsOverride", "customDetails",
@@ -118,7 +118,7 @@
         "sha256": { "$ref": "#/$defs/hash" },
         "controlOwner": { "$ref": "#/$defs/id" },
         "description": { "$ref": "#/$defs/id" },
-        "enabledByDefault": { "type": "boolean" },
+        "requiresInteractionContent": { "type": "boolean" },
         "severity": { "enum": [ "Informational", "Low", "Medium", "High" ] },
         "query": { "$ref": "#/$defs/id" },
         "queryFrequency": { "$ref": "#/$defs/duration" },

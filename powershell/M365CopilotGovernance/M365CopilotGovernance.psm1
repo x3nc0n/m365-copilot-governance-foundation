@@ -131,6 +131,9 @@ function ConvertTo-M365RedactedObject {
                     {
                         param($match)
                         $domain = $match.Value.ToLowerInvariant()
+                        if ($match.Value -match '^[A-Za-z]+\.(Read|ReadWrite)(\.[A-Za-z]+)+$') {
+                            return $match.Value
+                        }
                         $isPublicService = @($publicDomainSuffixes | Where-Object {
                             $domain -eq $_ -or $domain.EndsWith(".$_", [System.StringComparison]::OrdinalIgnoreCase)
                         }).Count -gt 0
@@ -242,7 +245,7 @@ function Invoke-M365GovernanceValidation {
             try {
                 $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json -Depth 100
                 $arrayNames = @($manifest.PSObject.Properties.Name | Where-Object { $_ -in @('functions', 'analytics', 'workbooks') })
-                $validShape = $manifest.solutionVersion -eq '0.1.4' -and
+                $validShape = $manifest.solutionVersion -eq '0.2.0' -and
                     $arrayNames.Count -eq 3 -and
                     $null -ne $manifest.functions -and
                     $null -ne $manifest.analytics -and
@@ -327,28 +330,122 @@ function Test-M365DataHealth {
     Get-M365ReadOnlyPlaneResult -Command 'Test-DataHealth' -Plane 'data-health' -Online:$Online
 }
 
+function Get-M365CollectorGraphRole {
+    param(
+        [Parameter(Mandatory)][ValidateSet('AllLicensedUsers', 'IncludeGroup', 'ExcludeGroup')][string]$CollectionScope
+    )
+
+    $roles = @('AiEnterpriseInteraction.Read.All', 'User.Read.All')
+    if ($CollectionScope -ne 'AllLicensedUsers') {
+        $roles += 'GroupMember.Read.All'
+    }
+    return $roles
+}
+
+function Invoke-M365GraphRequest {
+    param(
+        [Parameter(Mandatory)][ValidateSet('GET', 'POST')][string]$Method,
+        [Parameter(Mandatory)][string]$Uri,
+        [object]$Body
+    )
+
+    $parameters = @{ Method = $Method; Uri = $Uri; OutputType = 'PSObject' }
+    if ($null -ne $Body) {
+        $parameters.Body = ($Body | ConvertTo-Json -Depth 10 -Compress)
+        $parameters.ContentType = 'application/json'
+    }
+    Invoke-MgGraphRequest @parameters
+}
+
+function Get-M365GraphContext {
+    if (-not (Get-Command -Name Get-MgContext -ErrorAction SilentlyContinue)) {
+        return $null
+    }
+    Get-MgContext
+}
+
 function Initialize-M365CollectorIdentity {
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param(
-        [switch]$Bootstrap
+        [switch]$Bootstrap,
+        [string]$ManagedIdentityPrincipalId,
+        [ValidateSet('AllLicensedUsers', 'IncludeGroup', 'ExcludeGroup')]
+        [string]$CollectionScope = 'AllLicensedUsers',
+        [string]$GroupId
     )
+
+    $command = 'Initialize-CollectorIdentity'
+    $roles = @(Get-M365CollectorGraphRole -CollectionScope $CollectionScope)
+    $plan = "Microsoft Graph application roles for scope ${CollectionScope}: $($roles -join ', ')."
 
     if (-not $Bootstrap) {
-        return Get-M365Result -Command 'Initialize-CollectorIdentity' -Offline $true -Checks @(
-            Format-M365Check -Name 'bootstrap-gate' -Status skipped -Evidence 'No changes were made because -Bootstrap was not supplied.' -Remediation 'Review the identity plan, then use -Bootstrap with -WhatIf before any authorized mutation.'
+        return Get-M365Result -Command $command -Offline $true -Checks @(
+            Format-M365Check -Name 'bootstrap-gate' -Status skipped -Evidence "No changes were made because -Bootstrap was not supplied. Plan: $plan" -Remediation 'Review the plan, then rerun with -Bootstrap -ManagedIdentityPrincipalId <interactionCollectorPrincipalId output> and -WhatIf before granting.'
         )
     }
 
-    $target = 'separate least-privilege collector identity'
-    if (-not $PSCmdlet.ShouldProcess($target, 'Prepare collector identity bootstrap')) {
-        return Get-M365Result -Command 'Initialize-CollectorIdentity' -Offline $true -Checks @(
-            Format-M365Check -Name 'should-process' -Status skipped -Evidence 'Bootstrap was declined or executed with -WhatIf. No changes were made.'
-        )
-    }
-
-    return Get-M365Result -Command 'Initialize-CollectorIdentity' -Offline $true -Checks @(
-        Format-M365Check -Name 'mvp-bootstrap-boundary' -Status warning -Evidence 'No identity was created. The MVP does not automate tenant-wide consent, connector activation, or credentials.' -Remediation 'Use an approved deployment identity and complete administrator consent as a separate human-controlled gate.'
+    $guidPattern = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+    $inputChecks = @(
+        if ($ManagedIdentityPrincipalId -notmatch $guidPattern) {
+            Format-M365Check -Name 'input-principal' -Status fail -Evidence 'ManagedIdentityPrincipalId must be the collector managed identity object ID.' -Remediation 'Use the interactionCollectorPrincipalId deployment output.'
+        }
+        if ($CollectionScope -ne 'AllLicensedUsers' -and $GroupId -notmatch $guidPattern) {
+            Format-M365Check -Name 'input-group' -Status fail -Evidence "GroupId is required for $CollectionScope." -Remediation 'Supply the Microsoft Entra group object ID used by the deployment.'
+        }
     )
+    if ($inputChecks) {
+        return Get-M365Result -Command $command -Offline $true -Checks $inputChecks
+    }
+
+    if (-not $PSCmdlet.ShouldProcess('collector managed identity', "Grant $plan")) {
+        return Get-M365Result -Command $command -Offline $true -Checks @(
+            Format-M365Check -Name 'should-process' -Status skipped -Evidence "Bootstrap was declined or executed with -WhatIf. No changes were made. Plan: $plan"
+        )
+    }
+
+    try {
+        if ($null -eq (Get-M365GraphContext)) {
+            return Get-M365Result -Command $command -Offline $false -Checks @(
+                Format-M365Check -Name 'graph-authentication' -Status fail -Evidence 'No Microsoft Graph session was found. No implicit sign-in or consent was attempted.' -Remediation "Install the Microsoft Graph PowerShell authentication module, run Connect-MgGraph -Scopes 'AppRoleAssignment.ReadWrite.All','Application.Read.All','GroupMember.Read.All' as a Privileged Role Administrator or Global Administrator, then rerun."
+            )
+        }
+
+        $checks = [System.Collections.Generic.List[object]]::new()
+        $graphBase = 'https://graph.microsoft.com/v1.0'
+        if ($CollectionScope -ne 'AllLicensedUsers') {
+            $null = Invoke-M365GraphRequest -Method GET -Uri "$graphBase/groups/$GroupId`?`$select=id"
+            $checks.Add((Format-M365Check -Name 'scope-group' -Status pass -Evidence "The $CollectionScope group exists."))
+        }
+
+        $graphApp = Invoke-M365GraphRequest -Method GET -Uri "$graphBase/servicePrincipals(appId='00000003-0000-0000-c000-000000000000')?`$select=id,appRoles"
+        $existing = @((Invoke-M365GraphRequest -Method GET -Uri "$graphBase/servicePrincipals/$ManagedIdentityPrincipalId/appRoleAssignments").value)
+
+        foreach ($role in $roles) {
+            $appRole = @($graphApp.appRoles | Where-Object { $_.value -eq $role -and $_.allowedMemberTypes -contains 'Application' }) | Select-Object -First 1
+            if (-not $appRole) {
+                $checks.Add((Format-M365Check -Name "graph-role:$role" -Status fail -Evidence "Microsoft Graph does not expose application role $role in this cloud." -Remediation 'Confirm the tenant cloud supports the Copilot interaction export API.'))
+                continue
+            }
+            if (@($existing | Where-Object { $_.appRoleId -eq $appRole.id -and $_.resourceId -eq $graphApp.id }).Count -gt 0) {
+                $checks.Add((Format-M365Check -Name "graph-role:$role" -Status pass -Evidence "$role was already granted."))
+                continue
+            }
+            $null = Invoke-M365GraphRequest -Method POST -Uri "$graphBase/servicePrincipals/$ManagedIdentityPrincipalId/appRoleAssignments" -Body @{
+                principalId = $ManagedIdentityPrincipalId
+                resourceId  = $graphApp.id
+                appRoleId   = $appRole.id
+            }
+            $checks.Add((Format-M365Check -Name "graph-role:$role" -Status pass -Evidence "$role was granted."))
+        }
+
+        return Get-M365Result -Command $command -Offline $false -Checks $checks
+    }
+    catch {
+        $check = Format-M365Check -Name 'operational-error' -Status fail -Evidence $_.Exception.Message -Remediation 'Confirm the Graph session has AppRoleAssignment.ReadWrite.All and Application.Read.All, and that the principal ID is the collector managed identity.'
+        $result = Get-M365Result -Command $command -Offline $false -Checks @($check)
+        $result.exitCode = 3
+        return $result
+    }
 }
 
 Export-ModuleMember -Function @(

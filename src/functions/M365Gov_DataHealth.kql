@@ -50,11 +50,10 @@ let observed =
     | summarize LastEventTime=max(TimeGenerated), EventCount=count() by TableName;
 expected
 | join kind=leftouter observed on TableName
-| extend
-    Age = now() - LastEventTime,
-    Status = case(
+| extend Age = now() - LastEventTime
+| extend Status = case(
         isnull(LastEventTime), "UnavailableOrSilent",
         Age > ExpectedFreshness, "Stale",
-        "Healthy"),
-    GovernanceFunction = "M365Gov_DataHealth"
+        "Healthy")
+| extend GovernanceFunction = "M365Gov_DataHealth"
 | project-away TableName1

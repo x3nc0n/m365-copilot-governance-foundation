@@ -34,6 +34,7 @@
     "name": { "$ref": "#/$defs/name" },
     "displayName": { "$ref": "#/$defs/text" },
     "enabled": { "const": false },
+    "requiresInteractionContent": { "type": "boolean" },
     "severity": { "enum": [ "Informational", "Low", "Medium", "High" ] },
     "queryFrequency": { "$ref": "#/$defs/duration" },
     "queryPeriod": { "$ref": "#/$defs/duration" },

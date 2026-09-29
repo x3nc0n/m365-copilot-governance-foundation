@@ -6,8 +6,8 @@ param workspaceResourceId string
 @description('Whether analytic rule resources should be deployed.')
 param deployAnalytics bool = true
 
-@description('Whether deployed analytic rules should be enabled.')
-param analyticsEnabled bool = false
+@description('Whether the interaction-content table exists. Rules that require it are skipped when false.')
+param interactionContentEnabled bool = false
 
 @description('Analytic rule definitions from generated/content-manifest.json.')
 param analytics array = []
@@ -17,7 +17,7 @@ resource workspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existin
 }
 
 resource analyticRules 'Microsoft.SecurityInsights/alertRules@2024-03-01' = [
-  for analytic in analytics: if (deployAnalytics) {
+  for analytic in analytics: if (deployAnalytics && (!analytic.requiresInteractionContent || interactionContentEnabled)) {
     scope: workspace
     name: guid(workspaceResourceId, analytic.resourceName)
     kind: 'Scheduled'
@@ -26,7 +26,7 @@ resource analyticRules 'Microsoft.SecurityInsights/alertRules@2024-03-01' = [
       customDetails: analytic.customDetails
       description: analytic.description
       displayName: analytic.displayName
-      enabled: analyticsEnabled && analytic.enabledByDefault
+      enabled: false
       eventGroupingSettings: {
         aggregationKind: analytic.eventGroupingAggregationKind
       }
@@ -47,6 +47,6 @@ resource analyticRules 'Microsoft.SecurityInsights/alertRules@2024-03-01' = [
   }
 ]
 
-var deployedAnalyticRuleResourceIds = [for (analytic, index) in analytics: analyticRules[index].id]
+var candidateAnalyticRuleResourceIds = [for (analytic, index) in analytics: deployAnalytics && (!analytic.requiresInteractionContent || interactionContentEnabled) ? analyticRules[index].id : '']
 
-output analyticRuleResourceIds array = deployAnalytics ? deployedAnalyticRuleResourceIds : []
+output analyticRuleResourceIds array = filter(candidateAnalyticRuleResourceIds, id => !empty(id))
